@@ -50,7 +50,7 @@ const addCashAccount = "INSERT INTO cash_accounts (id_user, id_type_accounts, na
 const editCashAccount = "UPDATE cash_accounts SET id_type_accounts = ?, name = ?, id_all_currencies = ?, id_bank_name = ?, balanceIn = ?, turnoverDebt = ?, turnoverCred = ?, api_key WHERE id = ?";
 
 // БД запросы к Pay
-const addPay = "INSTER INTO pay (id_user, number, date_create, id_type, type, type_order, id_cash_accounts, note, id_legal_entites) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+const addPay = "INSERT INTO pay (id_user, number, date_create, id_type, type, type_order, id_cash_accounts, note, id_legal_entites) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 const editPay = "UPDATE pay SET date_create = ?, id_type = ?, type = ?, type_order = ?, id_cash_accounts = ?, note = ?, id_legal_entites WHERE id = ?"
 
 // БД запросы к PayType

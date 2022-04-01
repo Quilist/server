@@ -141,7 +141,7 @@ function paginations(req, res, dbRequest, dbParam) {
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 25;
         const size = array.length < limit ? array.length : limit;
-        console.log(limit)
+
         const subarray = [];
 
         if (array.length !== 0) {
