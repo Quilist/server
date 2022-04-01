@@ -13,8 +13,6 @@ router.get("/", utils.isTokenValid, async (req, res) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 25;
 
-  const size = array.length < limit ? array.length : array.length / limit;
-
   const pay = new Promise((resolve, reject) => {
     db.query(`${query.getItems("pay")} AND created_at < ? AND created_at > ?`, [req.token.id, date_from, date_to], (err, result) => {
       if (err) return res.json({ status: "error", message: err.message });
@@ -37,6 +35,7 @@ router.get("/", utils.isTokenValid, async (req, res) => {
   });
 
   const array = [...(await pay), ...(await currency_exchange), ...(await moving_money)];
+  const size = array.length < limit ? array.length : array.length / limit;
 
   const subarray = [];
 

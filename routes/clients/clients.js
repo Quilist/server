@@ -11,6 +11,8 @@ router.get("/", utils.isTokenValid, (req, res) => {
         if (err) return res.json({ status: "error", message: err.message });
 
         const array = [...result];
+
+        const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 25;
         const size = array.length < limit ? array.length : array.length / limit;
 
@@ -21,13 +23,15 @@ router.get("/", utils.isTokenValid, (req, res) => {
             result[index].mail = result[index]?.mail.split(";")
         }
 
-        for (let i = 0; i < Math.ceil(array.length / size); i++) {
-            subarray.push(array.slice((i * size), (i * size) + size));
+        if (array.length !== 0) {
+            for (let i = 0; i < Math.ceil(array.length / size); i++) {
+                subarray.push(array.slice((i * size), (i * size) + size));
+            }
         }
 
         res.json({
             status: "OK", message: {
-                items: subarray[Number(req.query.page) - 1],
+                items: subarray[page - 1],
                 paginations: {
                     total: result.length,
                     last_page: subarray.length
