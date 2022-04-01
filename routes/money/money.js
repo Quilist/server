@@ -14,21 +14,21 @@ router.get("/", utils.isTokenValid, async (req, res) => {
   const limit = Number(req.query.limit) || 25;
 
   const pay = new Promise((resolve, reject) => {
-    db.query(`${query.getItems("pay")} AND date_create < ? AND date_create > ?`, [req.token.id, date_from, date_to], (err, result) => {
+    db.query(`${query.getItems("pay")} AND date_create > ? AND date_create < ?`, [req.token.id, date_from, date_to], (err, result) => {
       if (err) return res.json({ status: "error", message: err.message });
       resolve(result);
     });
   });
 
   const currency_exchange = new Promise((resolve, reject) => {
-    db.query(`${query.getItems("currency_exchange")} AND date_create < ? AND date_create > ?`, [req.token.id, date_from, date_to], (err, result) => {
+    db.query(`${query.getItems("currency_exchange")} AND date_create > ? AND date_create < ?`, [req.token.id, date_from, date_to], (err, result) => {
       if (err) return res.json({ status: "error", message: err.message });
       resolve(result);
     });
   });
 
   const moving_money = new Promise((resolve, reject) => {
-    db.query(`${query.getItems("moving_money")} AND date_create < ? AND date_create > ?`, [req.token.id, date_from, date_to], (err, result) => {
+    db.query(`${query.getItems("moving_money")} AND date_create > ? AND date_create < ?`, [req.token.id, date_from, date_to], (err, result) => {
       if (err) return res.json({ status: "error", message: err.message });
       resolve(result);
     });
