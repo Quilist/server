@@ -14,21 +14,21 @@ router.get("/", utils.isTokenValid, async (req, res) => {
   const limit = Number(req.query.limit) || 25;
 
   const pay = new Promise((resolve, reject) => {
-    db.query(`${query.getItems("pay")} AND created_at < ? AND created_at > ?`, [req.token.id, date_from, date_to], (err, result) => {
+    db.query(`${query.getItems("pay")} AND date_create < ? AND date_create > ?`, [req.token.id, date_from, date_to], (err, result) => {
       if (err) return res.json({ status: "error", message: err.message });
       resolve(result);
     });
   });
 
   const currency_exchange = new Promise((resolve, reject) => {
-    db.query(`${query.getItems("currency_exchange")} AND created_at < ? AND created_at > ?`, [req.token.id, date_from, date_to], (err, result) => {
+    db.query(`${query.getItems("currency_exchange")} AND date_create < ? AND date_create > ?`, [req.token.id, date_from, date_to], (err, result) => {
       if (err) return res.json({ status: "error", message: err.message });
       resolve(result);
     });
   });
 
   const moving_money = new Promise((resolve, reject) => {
-    db.query(`${query.getItems("moving_money")} AND created_at < ? AND created_at > ?`, [req.token.id, date_from, date_to], (err, result) => {
+    db.query(`${query.getItems("moving_money")} AND date_create < ? AND date_create > ?`, [req.token.id, date_from, date_to], (err, result) => {
       if (err) return res.json({ status: "error", message: err.message });
       resolve(result);
     });
@@ -60,12 +60,12 @@ router.get("/", utils.isTokenValid, async (req, res) => {
 
 // добавление currency_exchange и moving_money
 router.post(`/:db/add`, utils.isTokenValid, async (req, res) => {
-  const { created_at, from_currency_id, to_currency_id, exchange_rate, cash_account_id, amount_pay, amount_receive, note, from_cash_account_id, to_cash_account_id, amount, } = req.body;
+  const { date_create, from_currency_id, to_currency_id, exchange_rate, cash_account_id, amount_pay, amount_receive, note, from_cash_account_id, to_cash_account_id, amount, } = req.body;
 
   if (req.params.db === "currency_exchange") {
     const options = [
       req.token.id,
-      created_at,
+      date_create,
       from_currency_id,
       to_currency_id,
       exchange_rate,
@@ -80,7 +80,7 @@ router.post(`/:db/add`, utils.isTokenValid, async (req, res) => {
 
   if (req.params.db === "moving_money") {
     const options = [
-      created_at,
+      date_create,
       from_cash_account_id,
       to_cash_account_id,
       amount,
@@ -96,11 +96,11 @@ router.get("/:db/:id", utils.isTokenValid, async (req, res) => utils.dbRequestFr
 
 // редактирование money
 router.post("/:db/:id/edit", utils.isTokenValid, async (req, res) => {
-  const { created_at, from_currency_id, to_currency_id, exchange_rate, cash_account_id, amount_pay, amount_receive, note, from_cash_account_id, to_cash_account_id, amount, } = req.body;
+  const { date_create, from_currency_id, to_currency_id, exchange_rate, cash_account_id, amount_pay, amount_receive, note, from_cash_account_id, to_cash_account_id, amount, } = req.body;
 
   if (req.params.db === "currency_exchange") {
     const options = [
-      created_at,
+      date_create,
       from_currency_id,
       to_currency_id,
       exchange_rate,
@@ -116,7 +116,7 @@ router.post("/:db/:id/edit", utils.isTokenValid, async (req, res) => {
 
   if (req.params.db === "moving_money") {
     const options = [
-      created_at,
+      date_create,
       from_cash_account_id,
       to_cash_account_id,
       amount,
