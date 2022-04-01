@@ -118,7 +118,8 @@ module.exports = {
     removePayType,
 
     addCurrencyExchange,
-    addMovingMoney,
     editCurrencyExchange,
-    editMovingMoney
+    
+    editMovingMoney,
+    addMovingMoney
 }

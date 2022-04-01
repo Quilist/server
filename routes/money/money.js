@@ -80,6 +80,7 @@ router.post(`/:db/add`, utils.isTokenValid, async (req, res) => {
 
   if (req.params.db === "moving_money") {
     const options = [
+      req.token.id,
       created_at,
       from_cash_account_id,
       to_cash_account_id,
