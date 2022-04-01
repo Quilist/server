@@ -35,7 +35,7 @@ router.get("/", utils.isTokenValid, async (req, res) => {
   });
 
   const array = [...(await pay), ...(await currency_exchange), ...(await moving_money)];
-  const size = array.length < limit ? array.length : array.length / limit;
+  const size = array.length < limit ? array.length : limit;
 
   const subarray = [];
 

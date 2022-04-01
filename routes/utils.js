@@ -140,7 +140,7 @@ function paginations(req, res, dbRequest, dbParam) {
 
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 25;
-        const size = array.length < limit ? array.length : array.length / limit;
+        const size = array.length < limit ? array.length : limit;
 
         const subarray = [];
 
@@ -152,7 +152,7 @@ function paginations(req, res, dbRequest, dbParam) {
 
         res.json({
             status: "OK", message: {
-                items:  subarray.length !== 0 ? subarray[page - 1] : [],
+                items: subarray.length !== 0 ? subarray[page - 1] : [],
                 paginations: {
                     total: result.length,
                     last_page: subarray.length
