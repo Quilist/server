@@ -81,7 +81,6 @@ module.exports = {
 
     AddSupplier,
     UpdateSupplier,
-    DeleteSupplier,
 
     AddEmployee,
     UpdateEmployee,
