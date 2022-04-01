@@ -60,12 +60,12 @@ router.get("/", utils.isTokenValid, async (req, res) => {
 
 // добавление currency_exchange и moving_money
 router.post(`/:db/add`, utils.isTokenValid, async (req, res) => {
-  const { date_create, from_currency_id, to_currency_id, exchange_rate, cash_account_id, amount_pay, amount_receive, note, from_cash_account_id, to_cash_account_id, amount, } = req.body;
+  const { created_at, from_currency_id, to_currency_id, exchange_rate, cash_account_id, amount_pay, amount_receive, note, from_cash_account_id, to_cash_account_id, amount, } = req.body;
 
   if (req.params.db === "currency_exchange") {
     const options = [
       req.token.id,
-      date_create,
+      created_at,
       from_currency_id,
       to_currency_id,
       exchange_rate,
@@ -80,7 +80,7 @@ router.post(`/:db/add`, utils.isTokenValid, async (req, res) => {
 
   if (req.params.db === "moving_money") {
     const options = [
-      date_create,
+      created_at,
       from_cash_account_id,
       to_cash_account_id,
       amount,
@@ -96,11 +96,11 @@ router.get("/:db/:id", utils.isTokenValid, async (req, res) => utils.dbRequestFr
 
 // редактирование money
 router.post("/:db/:id/edit", utils.isTokenValid, async (req, res) => {
-  const { date_create, from_currency_id, to_currency_id, exchange_rate, cash_account_id, amount_pay, amount_receive, note, from_cash_account_id, to_cash_account_id, amount, } = req.body;
+  const { created_at, from_currency_id, to_currency_id, exchange_rate, cash_account_id, amount_pay, amount_receive, note, from_cash_account_id, to_cash_account_id, amount, } = req.body;
 
   if (req.params.db === "currency_exchange") {
     const options = [
-      date_create,
+      created_at,
       from_currency_id,
       to_currency_id,
       exchange_rate,
@@ -116,7 +116,7 @@ router.post("/:db/:id/edit", utils.isTokenValid, async (req, res) => {
 
   if (req.params.db === "moving_money") {
     const options = [
-      date_create,
+      created_at,
       from_cash_account_id,
       to_cash_account_id,
       amount,
