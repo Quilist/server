@@ -131,17 +131,18 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
     // редактирование pay
     db.query(query.editPay, options, (err, result) => {
         if (err) return res.json({ status: "error", message: err.message });
+
         // редактирование pay_type
         const arr = [...payments, ...changes, ...totals];
         const values = [];
-        // редактирование и добавление pay_type
+
         for (let i = 0; i < arr.length; i++) {
             const { id, currency_id, amount, type_pay, type_amount, date_create } = arr[i];
 
             if (!currency_id || !amount || !type_pay || !type_amount) return res.json({ status: "error", message: "Unknow values" });
 
             if (!id) {
-                const payOptions = [
+                const options = [
                     req.params.id,
                     currency_id,
                     amount,
@@ -150,11 +151,11 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
                     Date.now()
                 ];
 
-                values.push(payOptions);
+                values.push(options);
             }
 
             if (id) {
-                const updateOptions = [
+                const options = [
                     currency_id,
                     amount,
                     type_pay,
@@ -163,7 +164,7 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
                     req.params.id
                 ];
 
-                db.query(query.editPayType, updateOptions, err => {
+                db.query(query.editPayType, options, err => {
                     if (err) return res.json({ status: "error", message: err.message });
                 });
             }
@@ -172,17 +173,25 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
         db.query(query.addPayType, [values], err => {
             if (err) return res.json({ status: "error", message: err.message });
 
-            db.query(query.getIdPayType, [req.query.id], (err, payTypeResult) => {
+            db.query(query.getPayType, [req.query.id], (err, payTypeResult) => {
+                if (err) return res.json({ status: "error", message: err.message });
 
-                for (let i = 0; i < payTypeResult.length; i++) {
-                    if (arr.indexOf(payTypeResult[i].id) === -1) {
-                        db.query(query.removeItem("pay_type"), [req.query.id], err => {
-                            if (err) return res.json({ status: "error", message: err.message });
+                const promise = payTypeResult.map(elem => {
+                    const index = arr.findIndex(el => el.id === elem.id);
+
+                    if (index === -1) {
+                        return new Promise((resolve) => {
+                            db.query(query.removeItem("pay_type"), [req.query.id], err, result => {
+                                if (err) return res.json({ status: "error", message: err.message });
+                                resolve(result);
+                            });
                         });
                     }
-                }
-    
-                res.json({ status: "OK", message: "Succes" });
+                });
+
+                Promise.all(promise).then(() => {
+                    res.json({ status: "OK", message: "Succes" });
+                });
             });
         });
     });

@@ -55,7 +55,6 @@ const editPay = "UPDATE pay SET date_create = ?, id_type = ?, type = ?, type_ord
 
 // БД запросы к PayType
 const getPayType = "SELECT * FROM pay_type WHERE pay_id = ?";
-const getIdPayType = "SELECT id FROM pay_type WHERE pay_id = ?";
 const addPayType = "INSERT INTO pay_type (pay_id, currency_id, amount, type_pay, type_amount, date_create) VALUES ?";
 const editPayType = "UPDATE pay_type SET currency_id = ?, amount = ?, type_pay = ?, type_amount = ?, date_create = ? WHERE id = ?";
 const removePayType = "DELETE FROM pay_type WHERE pay_id = ?";
@@ -112,7 +111,6 @@ module.exports = {
     editPay,
 
     getPayType,
-    getIdPayType,
     addPayType,
     editPayType,
     removePayType,
