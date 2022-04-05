@@ -203,6 +203,24 @@ function getAuxiliary(res, dbRequest) {
     });
 }
 
+function makeQuery(...params) {
+    /*
+     * Отправка запроса через функцию,
+     * для дальнейшего более удобного
+     * использования.
+     * (Эксперимент)
+     */
+    new Promise((resolve, reject) => {
+        db.query(...params, (error, result) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+}
+
 module.exports = {
     stringHash,
     authToken,
@@ -212,5 +230,6 @@ module.exports = {
     dbRequest,
     dbRequestFromId,
     getAuxiliary,
-    paginations
+    paginations,
+    makeQuery
 }

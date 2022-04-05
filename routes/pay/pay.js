@@ -113,10 +113,12 @@ router.get("/:id", utils.isTokenValid, async (req, res) => {
 });
 
 // редактирование pay и pay_type
-router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
-    const { id_type, type, type_order, id_cash_accounts, note, id_legal_entites, payments, changes, totals } = req.body
+router.post("/:id/edit", utils.isTokenValid, (req, res) => {
+    const { id_type, type, type_order, id_cash_accounts, note, id_legal_entites, payments, changes, totals } = req.body;
 
     if (!totals) return res.json({ status: "error", message: "invalid parameters" });
+
+    const arr = [...payments, ...changes, ...totals];
 
     const options = [
         Date.now(),
@@ -127,68 +129,58 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
         note,
         id_legal_entites,
         req.params.id
-    ]
-    // редактирование pay
-    db.query(query.editPay, options, (err, result) => {
-        if (err) return res.json({ status: "error", message: err.message });
-        // редактирование pay_type
-        const arr = [...payments, ...changes, ...totals];
-        const values = [];
-        // редактирование и добавление pay_type
-        for (let i = 0; i < arr.length; i++) {
-            const { id, currency_id, amount, type_pay, type_amount, date_create } = arr[i];
+    ];
 
-            if (!currency_id || !amount || !type_pay || !type_amount) return res.json({ status: "error", message: "Unknow values" });
+    utils.makeQuery(query.editPay, options)
+        .then(() => {
+            const values = [];
+            // редактирование и добавление pay_type
+            for (let i = 0; i < arr.length; i++) {
+                const { id, currency_id, amount, type_pay, type_amount, date_create } = arr[i];
 
-            if (!id) {
-                const options = [
-                    req.params.id,
-                    currency_id,
-                    amount,
-                    type_pay,
-                    type_amount,
-                    Date.now()
-                ];
+                if (!currency_id || !amount || !type_pay || !type_amount) return res.json({ status: "error", message: "Unknow values" });
 
-                values.push(options);
-            }
+                // если айди нет, то записываем в value
+                if (!id) {
+                    const options = [
+                        req.params.id,
+                        currency_id,
+                        amount,
+                        type_pay,
+                        type_amount,
+                        Date.now()
+                    ];
 
-            if (id) {
-                const options = [
-                    currency_id,
-                    amount,
-                    type_pay,
-                    type_amount,
-                    date_create,
-                    req.params.id
-                ];
-
-                db.query(query.editPayType, options, err => {
-                    if (err) return res.json({ status: "error", message: err.message });
-                });
-            }
-        }
-
-        db.query(query.addPayType, [values], err => {
-            if (err) return res.json({ status: "error", message: err.message });
-
-            db.query(query.getPayType, [req.query.id], (err, payTypeResult) => {
-                if (err) return res.json({ status: "error", message: err.message });
-
-                for (let i = 0; i < payTypeResult.length; i++) {
-                    const index = arr.findIndex(el => el.id === payTypeResult[i].id);
-
-                    if (index === -1) {
-                        db.query(query.removeItem("pay_type"), [req.query.id], err => {
-                            if (err) return res.json({ status: "error", message: err.message });
-                        });
-                    }
+                    values.push(options);
                 }
+                // если айди есть, то редактируем
+                if (id) {
+                    const options = [
+                        currency_id,
+                        amount,
+                        type_pay,
+                        type_amount,
+                        date_create,
+                        req.params.id
+                    ];
 
-                res.json({ status: "OK", message: "Succes" });
-            });
-        });
-    });
+                    utils.makeQuery(query.editPayType, options).catch(({ message }) => res.json({ status: "error", message }));
+                }
+            }
+            return utils.makeQuery(query.addPayType, [values]);
+        })
+        .then(() => utils.makeQuery(query.getPayType, [req.query.id]))
+        .then((payTypeResult) => {
+            for (let i = 0; i < payTypeResult.length; i++) {
+                const index = arr.findIndex((el) => el.id === payTypeResult[i].id);
+                // если айди не найден, то удаляем запись
+                if (index === -1) {
+                    return utils.makeQuery(query.removeItem("pay_type"), [req.query.id]);
+                }
+            }
+        })
+        .then(() => res.json({ status: "OK", message: "Succes" }))
+        .catch(({ message }) => res.json({ status: "error", message }));
 });
 
 // удаление pay и pay_type

@@ -48,8 +48,35 @@ router.get("/", utils.isTokenValid, async (req, res) => {
   });
 });
 
+router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
+
+  db.query(query.getAllCurrencies, (err, result) => {
+
+    if (err) return res.json({ status: "error", message: err.message });
+
+    const promises = ["cash_accounts", "legal_entites"].map(elem => {
+      return new Promise((resolve) => {
+        db.query(query.getItems(elem), [req.token.id], (err, result) => {
+          if (err) return res.json({ status: "error", message: err.message });
+          resolve(result);
+        });
+      });
+    })
+
+    Promise.all(promises).then(elem => {
+      res.json({
+        status: "OK", message: {
+          cash_account: elem[0],
+          legal_entites: elem[1],
+          currencies: result
+        }
+      });
+    });
+  });
+});
+
 // добавление currency_exchange и moving_money
-router.post(`/:db/add`, utils.isTokenValid, async (req, res) => {
+router.post("/:db/add", utils.isTokenValid, async (req, res) => {
   const { created_at, from_currency_id, to_currency_id, exchange_rate, cash_account_id, amount_pay, amount_receive, note, from_cash_account_id, to_cash_account_id, amount } = req.body;
 
   if (req.params.db === "currency_exchange") {
