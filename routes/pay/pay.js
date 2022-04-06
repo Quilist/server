@@ -16,23 +16,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
     const totals = req.body.totals || [];
 
     const arr = [...payments, ...changes, ...totals];
-    // создание всех значений для pay_type
-    const values = arr.map(elem => {
-        const { currency_id, amount, type_pay, type_amount } = elem;
 
-        if (!currency_id || !amount || !type_pay || !type_amount) return res.json({ status: "error", message: "Unknow values" });
-
-        const options = [
-            result.insertId,
-            currency_id,
-            amount,
-            type_pay,
-            type_amount,
-            Date.now()
-        ];
-
-        return options;
-    });
     // получение payments 
     const promise = new Promise((resolve) => {
         db.query(`${query.getItems("pay")} AND id_type = ?`, [req.token.id, id_type], (err, result) => {
@@ -58,6 +42,23 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
     // добавление pay
     db.query(query.addPay, options, (err, result) => {
         if (err) return res.json({ status: "error", message: err.message });
+        // создание всех значений для pay_type
+        const values = arr.map(elem => {
+            const { currency_id, amount, type_pay, type_amount } = elem;
+
+            if (!currency_id || !amount || !type_pay || !type_amount) return res.json({ status: "error", message: "Unknow values" });
+
+            const options = [
+                result.insertId,
+                currency_id,
+                amount,
+                type_pay,
+                type_amount,
+                Date.now()
+            ];
+
+            return options;
+        });
         // добавление значений в pay_type
         utils.dbRequest(res, query.addPayType, [values], "Succes");
     });
