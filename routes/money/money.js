@@ -81,8 +81,10 @@ router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
     }
   }
 
-  Promise.all([...promises, utils.makeQuery(query.getAllCurrencies), types()]).then(elem => {
-    console.log(elem)
+  const currencies = utils.makeQuery(query.getAllCurrencies);
+
+  Promise.all([...promises, currencies, types()]).then(elem => {
+
     res.json({
       status: "OK", message: {
         cash_account: elem[0],

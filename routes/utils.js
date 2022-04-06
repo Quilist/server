@@ -197,9 +197,9 @@ function makeQuery(...params) {
      * использования.
      * (Эксперимент)
      */
-    new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         db.query(...params, (error, result) => {
-            if (error) console.log(error)
+            if (error) reject(error);
             else resolve(result);
         });
     });
