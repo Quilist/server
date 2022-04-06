@@ -18,7 +18,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
     const arr = [...payments, ...changes, ...totals];
 
     // получение payments 
-    const promise = new Promise((resolve) => {
+    const promise = new Promise((resolve, reject) => {
         db.query(`${query.getItems("pay")} AND id_type = ?`, [req.token.id, id_type], (err, result) => {
             if (err) return res.json({ status: "error", message: err.message });
             resolve(result);
