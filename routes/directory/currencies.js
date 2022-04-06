@@ -9,7 +9,7 @@ const utils = require("../utils");
 router.get("/", utils.isTokenValid, async (req, res) => utils.paginations(req, res, query.getItems("user_currencies"), [req.token.id]));
 
 // получение all_currencies
-router.get("/options", utils.isTokenValid, async (req, res) => utils.dbRequest(res, [query.getAllCurrencies]));
+router.get("/auxiliary", utils.isTokenValid, async (req, res) => utils.dbRequest(res, [query.getAllCurrencies]));
 
 // добавление currencies
 router.post("/add", utils.isTokenValid, async (req, res) => {
