@@ -12,8 +12,8 @@ router.get("/", utils.isTokenValid, async (req, res) => utils.paginations(req, r
 router.post("/add", utils.isTokenValid, async (req, res) => {
     const { id_type, type, type_order, id_cash_accounts, note, id_legal_entites, payments } = req.body
 
-    const changes = req.body.changes || []
-    const totals = req.body.totals || []
+    const changes = req.body.changes || [];
+    const totals = req.body.totals || [];
 
     const arr = [...payments, ...changes, ...totals];
     // создание всех значений для pay_type
@@ -115,9 +115,10 @@ router.get("/:id", utils.isTokenValid, async (req, res) => {
 
 // редактирование pay и pay_type
 router.post("/:id/edit", utils.isTokenValid, (req, res) => {
-    const { id_type, type, type_order, id_cash_accounts, note, id_legal_entites, payments, changes, totals } = req.body;
+    const { id_type, type, type_order, id_cash_accounts, note, id_legal_entites, payments } = req.body;
 
-    if (!totals) return res.json({ status: "error", message: "invalid parameters" });
+    const changes = req.body.changes || [];
+    const totals = req.body.totals || [];
 
     const arr = [...payments, ...changes, ...totals];
 
