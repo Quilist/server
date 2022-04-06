@@ -69,7 +69,7 @@ router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
 
   const types = () => {
     if (type in items) {
-      return utils.makeQuery(query.getItems(object[req.query.type]), req.token.id);
+      return utils.makeQuery(query.getItems(items[req.query.type]), req.token.id);
     }
 
     if (type === "salary") {
