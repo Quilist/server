@@ -21,7 +21,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
         id_to_currencies,
         exchange_rate
     ]
-
+    
     if (id_from_currencies === id_to_currencies) return res.json({ status: "error", message: "Value one cannot be equal to value two" });
 
     // получение всех currencies пользователя
