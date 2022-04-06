@@ -53,8 +53,7 @@ router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
   const items = {
     pay_supplier: "suppliers",
     pay_customer: "clients",
-    expend: "expenditure",
-    type: "salary",
+    pay_expend: "expenditure",
 
     receive_income: "income_items",
     receive_customer: "clients",
@@ -72,7 +71,7 @@ router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
       return utils.makeQuery(query.getItems(items[type]), req.token.id);
     }
 
-    if (type === "salary") {
+    if (type === "pay_salary") {
       return utils.makeQuery(query.getItems("employees", "id_user, f_name, s_name, mobile, password, mail, id_role, id_cach_acc, dachboard, suppliers, cash_accounts, order_supplier"), req.token.id);
     }
 
@@ -90,7 +89,7 @@ router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
         cash_account: elem[0],
         legal_entites: elem[1],
         currencies: elem[2],
-        type: elem[3]
+        items: elem[3]
       }
     });
   });
