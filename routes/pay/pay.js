@@ -103,12 +103,10 @@ router.get("/:id", utils.isTokenValid, async (req, res) => {
 
         res.json({
             status: "OK", message: {
-                pay: {
-                    ...result[0] || [],
-                    payments: array[0],
-                    changes: array[1],
-                    totals: array[2]
-                },
+                ...result[0] || [],
+                payments: array[0],
+                changes: array[1],
+                totals: array[2]
             }
         });
     });
