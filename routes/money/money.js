@@ -69,7 +69,7 @@ router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
 
   const types = () => {
     if (type in items) {
-      return utils.makeQuery(query.getItems(items[req.query.type]), req.token.id);
+      return utils.makeQuery(query.getItems(items[type]), req.token.id);
     }
 
     if (type === "salary") {
@@ -77,13 +77,12 @@ router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
     }
 
     if (type in user) {
-      return utils.makeQuery(query.getItem(user[req.query.type], "username"), req.token.id);
+      return utils.makeQuery(query.getItem(user[type], "username"), req.token.id);
     }
   }
 
-  const currencies = () => utils.makeQuery(query.getAllCurrencies);
-
-  Promise.all([...promises, currencies(), types()]).then(elem => {
+  Promise.all([...promises, utils.makeQuery(query.getAllCurrencies), types()]).then(elem => {
+    console.log(elem)
     res.json({
       status: "OK", message: {
         cash_account: elem[0],

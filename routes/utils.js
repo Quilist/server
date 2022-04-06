@@ -199,7 +199,7 @@ function makeQuery(...params) {
      */
     new Promise((resolve, reject) => {
         db.query(...params, (error, result) => {
-            if (error) reject(error);
+            if (error) console.log(error)
             else resolve(result);
         });
     });
