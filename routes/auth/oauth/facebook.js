@@ -5,8 +5,8 @@ const utils = require("../../utils");
 
 const passport = require("../../../passport-setup");
 const config = require("../../../config.json");
-const db = require("../../../database");
-const query = require("../../../dbRequests");
+const db = require("../../../db/database");
+const query = require("../../../db/dbRequests");
 
 const oAuthCallback = (req, res) => {
     /*
