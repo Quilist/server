@@ -11,7 +11,7 @@ const googleAuthRouter = require("./auth/oauth/google");
 const facebookAuthRouter = require("./auth/oauth/facebook");
 
 const clientsRouter = require("./clients/clients");
-const paymentsRouter = require("./pay/pay");
+const payRouter = require("./pay/pay");
 
 const itemsRouter =  require("./directory/items");
 const moneyRouter = require("./money/money");
@@ -42,7 +42,7 @@ router.use("/auth/google", googleAuthRouter);
 router.use("/auth/facebook", facebookAuthRouter);
 
 router.use("/clients", clientsRouter);
-router.use("/payments", paymentsRouter);
+router.use("/pay", payRouter);
 
 fs.readdir('./routes/directory', (err, files) => {
     files.forEach(elem => {
