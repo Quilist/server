@@ -168,7 +168,7 @@ function dbRequest(...params) {
      * для дальнейшего более удобного
      * использования.
      */
-    db.query(...params, (err, result) => {
+    db.query(...params[1], (err, result) => {
         if (err) return params[0].json({ status: "error", message: err.message });
 
         params[0].json({ status: "OK", message: params[2] || result });

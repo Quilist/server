@@ -60,7 +60,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
             return options;
         });
         // добавление значений в pay_type
-        utils.dbRequest(res, query.addPayType, [values], "Succes");
+        utils.dbRequest(res, [query.addPayType, [values]], "Succes");
     });
 });
 
