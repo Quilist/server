@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../dbRequests");
-const db = require("../../database");
+const query = require("../../db/dbRequests");
+const db = require("../../db/database");
 const utils = require("../utils");
 
 // получение всех money пользователя
@@ -14,13 +14,8 @@ router.get("/", utils.isTokenValid, async (req, res) => {
   const limit = Number(req.query.limit) || 25;
 
   const promises = ["pay", "currency_exchange", "moving_money"].map(elem => {
-    return new Promise((resolve) => {
-      db.query(`${query.getItems(elem)} AND date_create > ? AND date_create < ?`, [req.token.id, date_from, date_to], (err, result) => {
-        if (err) return res.json({ status: "error", message: err.message });
-        resolve(result);
-      });
-    });
-  })
+    return utils.makeQuery(`${query.getItems(elem)} AND date_create > ? AND date_create < ?`, [req.token.id, date_from, date_to]);
+  });
 
   Promise.all(promises).then(elem => {
     const array = [...elem[0], ...elem[1], ...elem[2]];
@@ -48,29 +43,54 @@ router.get("/", utils.isTokenValid, async (req, res) => {
   });
 });
 
+// Получение all_currencies, cash_accounts, legal_entites
 router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
 
-  db.query(query.getAllCurrencies, (err, result) => {
+  const type = req.query.type
 
-    if (err) return res.json({ status: "error", message: err.message });
+  if (!type) return res.json({ status: "error", message: "Invalid type" });
 
-    const promises = ["cash_accounts", "legal_entites"].map(elem => {
-      return new Promise((resolve) => {
-        db.query(query.getItems(elem), [req.token.id], (err, result) => {
-          if (err) return res.json({ status: "error", message: err.message });
-          resolve(result);
-        });
-      });
-    })
+  const items = {
+    pay_supplier: "suppliers",
+    pay_customer: "clients",
+    expend: "expenditure",
+    type: "salary",
 
-    Promise.all(promises).then(elem => {
-      res.json({
-        status: "OK", message: {
-          cash_account: elem[0],
-          legal_entites: elem[1],
-          currencies: result
-        }
-      });
+    receive_income: "income_items",
+    receive_customer: "clients",
+    receive_supplier: "suppliers"
+  }
+
+  const user = { pay_owner: "user", receive_owner: "user" }
+
+  const promises = ["cash_accounts", "legal_entites"].map(elem => {
+    return utils.makeQuery(query.getItems(elem), req.token.id);
+  })
+
+  const types = () => {
+    if (type in items) {
+      return utils.makeQuery(query.getItems(object[req.query.type]), req.token.id);
+    }
+
+    if (type === "salary") {
+      return utils.makeQuery(query.getItems("employees", "id_user, f_name, s_name, mobile, password, mail, id_role, id_cach_acc, dachboard, suppliers, cash_accounts, order_supplier"), req.token.id);
+    }
+
+    if (type in user) {
+      return utils.makeQuery(query.getItem(user[req.query.type], "username"), req.token.id);
+    }
+  }
+
+  const currencies = utils.makeQuery(query.getAllCurrencies);
+
+  Promise.all([...promises, currencies, types()]).then(elem => {
+    res.json({
+      status: "OK", message: {
+        cash_account: elem[0],
+        legal_entites: elem[1],
+        currencies: elem[2],
+        type: elem[3]
+      }
     });
   });
 });
@@ -92,7 +112,7 @@ router.post("/:db/add", utils.isTokenValid, async (req, res) => {
       note
     ];
 
-    utils.dbRequest(res, query.addCurrencyExchange, options, "Succes");
+    utils.dbRequest(res, [query.addCurrencyExchange, options], "Succes");
   }
 
   if (req.params.db === "moving_money") {
@@ -105,7 +125,7 @@ router.post("/:db/add", utils.isTokenValid, async (req, res) => {
       note
     ];
 
-    utils.dbRequest(res, query.addMovingMoney, options, "Succes");
+    utils.dbRequest(res, [query.addMovingMoney, options], "Succes");
   }
 });
 
@@ -129,7 +149,7 @@ router.post("/:db/:id/edit", utils.isTokenValid, async (req, res) => {
       req.params.id
     ];
 
-    utils.dbRequest(res, query.editCurrencyExchange, options, "Succes");
+    utils.dbRequest(res, [query.editCurrencyExchange, options], "Succes");
   }
 
   if (req.params.db === "moving_money") {
@@ -142,11 +162,11 @@ router.post("/:db/:id/edit", utils.isTokenValid, async (req, res) => {
       req.params.id
     ];
 
-    utils.dbRequest(res, query.editMovingMoney, options, "Succes");
+    utils.dbRequest(res, [query.editMovingMoney, options], "Succes");
   }
 });
 
 // Удаление money
-router.post("/:db/:id/remove", utils.isTokenValid, async (req, res) => utils.dbRequest(res, query.removeItem(req.params.db), [req.params.id], "Succes"));
+router.post("/:db/:id/remove", utils.isTokenValid, async (req, res) => utils.dbRequest(res, [query.removeItem(req.params.db), [req.params.id]], "Succes"));
 
 module.exports = router;

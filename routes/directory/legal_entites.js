@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../dbRequests");
+const query = require("../../db/dbRequests");
 const utils = require("../utils");
 
 // получение всех LegalEntites юрлиц
@@ -32,7 +32,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
     ]
 
     // отправка запроса
-    utils.dbRequest(res, query.addLegalEntites, options, "Succes");
+    utils.dbRequest(res, [query.addLegalEntites, options], "Succes");
 });
 
 // получение LegalEntites по айди
@@ -63,10 +63,10 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
     ]
 
     // отправка запроса
-    utils.dbRequest(res, query.editLegalEntites, options, "Succes");
+    utils.dbRequest(res, [query.editLegalEntites, options], "Succes");
 });
 
 // Удаление LegalEntites
-router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, query.removeItem("legal_entites"), [req.params.id], "Succes"));
+router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, [query.removeItem("legal_entites"), [req.params.id]], "Succes"));
 
 module.exports = router;

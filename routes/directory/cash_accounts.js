@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../dbRequests");
+const query = require("../../db/dbRequests");
 const utils = require("../utils");
 
 const monobank = require("../../services/banks/monobank");
@@ -45,11 +45,11 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
         turnoverCred
     ]
 
-    utils.dbRequest(res, query.addCashAccount, options, "Succes");
+    utils.dbRequest(res, [query.addCashAccount, options], "Succes");
 });
 
 // получение cash_accounts по айди
-router.get("/:id", utils.isTokenValid, async (req, res) => utils.dbRequestFromId(res, req, query.getItem("cash_accounts"), [req.params.id]));
+router.get("/:id", utils.isTokenValid, async (req, res) => utils.dbRequestFromId(res, [req, query.getItem("cash_accounts")], [req.params.id]));
 
 // редактирование cash_accounts
 router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
@@ -67,10 +67,10 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
         req.params.id
     ];
 
-    utils.dbRequest(res, query.editCashAccount, options, "Succes");
+    utils.dbRequest(res, [query.editCashAccount, options], "Succes");
 });
 
 // Удаление cash_accounts
-router.post("/:id/remove", utils.isTokenValid, async (req, res) => utils.dbRequest(res, query.removeItem("cash_accounts"), [req.params.id], "Succes"));
+router.post("/:id/remove", utils.isTokenValid, async (req, res) => utils.dbRequest(res, [query.removeItem("cash_accounts"), [req.params.id]], "Succes"));
 
 module.exports = router;

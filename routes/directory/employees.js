@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../dbRequests");
-const db = require("../../database");
+const query = require("../../db/dbRequests");
+const db = require("../../db/database");
 const utils = require("../utils");
 
 // получение всех Employees пользователя
@@ -31,7 +31,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
         JSON.stringify(add_order_supplier)
     ]
     // отправка запроса
-    utils.dbRequest(res, query.AddEmployee, options, "Succes");
+    utils.dbRequest(res, [query.AddEmployee, options], "Succes");
 });
 
 // получение Employee по айди
@@ -76,11 +76,11 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
         req.params.id
     ]
     // отправка запроса
-    utils.dbRequest(res, query.UpdateEmployee, options, "Succes");
+    utils.dbRequest(res, [query.UpdateEmployee, options], "Succes");
 });
 
 // Удаление Employee
-router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, query.removeItem("employees"), [req.params.id], "Succes"));
+router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, [query.removeItem("employees"), [req.params.id]], "Succes"));
 
 module.exports = router;
 

@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 
 const config = require("../config.json");
-const db = require("../database");
+const db = require("../db/database");
 
 // KEY - бинарное представление ключа из конфига.
 
@@ -162,16 +162,16 @@ function paginations(req, res, dbRequest, dbParam) {
     });
 }
 
-function dbRequest(res, dbRequest, dbParam, msg) {
+function dbRequest(...params) {
     /*
      * Отправка запроса через функцию,
      * для дальнейшего более удобного
      * использования.
      */
-    db.query(dbRequest, dbParam, (err, result) => {
-        if (err) return res.json({ status: "error", message: err.message });
+    db.query(...params[1], (err, result) => {
+        if (err) return params[0].json({ status: "error", message: err.message });
 
-        res.json({ status: "OK", message: msg || result });
+        params[0].json({ status: "OK", message: params[2] || result });
     });
 }
 
@@ -190,19 +190,6 @@ function dbRequestFromId(res, req, dbRequest, dbParam) {
     });
 }
 
-function getAuxiliary(res, dbRequest) {
-    /*
-     * Отправка запроса через функцию,
-     * для дальнейшего более удобного
-     * использования.
-     */
-    db.query(dbRequest, (err, result) => {
-        if (err) return res.json({ status: "error", message: err.message });
-
-        res.json({ status: "OK", message: result });
-    });
-}
-
 function makeQuery(...params) {
     /*
      * Отправка запроса через функцию,
@@ -212,11 +199,8 @@ function makeQuery(...params) {
      */
     new Promise((resolve, reject) => {
         db.query(...params, (error, result) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(result);
-            }
+            if (error) reject(error);
+            else resolve(result);
         });
     });
 }
@@ -229,7 +213,6 @@ module.exports = {
     isTokenValid,
     dbRequest,
     dbRequestFromId,
-    getAuxiliary,
     paginations,
     makeQuery
 }

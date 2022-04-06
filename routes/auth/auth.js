@@ -1,5 +1,5 @@
 const ExpressBrute = require("express-brute");
-const db = require("../../database")
+const db = require("../../db/database")
 
 const express = require("express");
 
@@ -7,7 +7,7 @@ const router = express.Router();
 const send = require("gmail-send");
 const utils = require("../utils");
 const config = require("../../config.json");
-const query = require("../../dbRequests");
+const query = require("../../db/dbRequests");
 
 //Создание простой защиты от брутфорса
 const store = new ExpressBrute.MemoryStore();

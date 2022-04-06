@@ -1,6 +1,6 @@
 // Бд запросы на удаление, получения списка, получение по айди
-const getItem = item => `SELECT * FROM ${item} WHERE id = ?`;
-const getItems = item => `SELECT * FROM ${item} WHERE id_user = ?`;
+const getItem = (...item) => `SELECT ${item[1] || "*"} FROM ${item} WHERE id = ?`;
+const getItems = (...item) => `SELECT ${item[1] || "*"} FROM ${item[0]} WHERE id_user = ?`;
 const removeItem = item => `DELETE FROM ${item} WHERE id = ?`;
 
 // БД запросы к user

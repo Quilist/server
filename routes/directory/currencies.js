@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../dbRequests");
-const db = require("../../database");
+const query = require("../../db/dbRequests");
+const db = require("../../db/database");
 const utils = require("../utils");
 
 // получение всех currencies пользователя
 router.get("/", utils.isTokenValid, async (req, res) => utils.paginations(req, res, query.getItems("user_currencies"), [req.token.id]));
 
 // получение all_currencies
-router.get("/options", utils.isTokenValid, async (req, res) => utils.getAuxiliary(res, query.getAllCurrencies));
+router.get("/options", utils.isTokenValid, async (req, res) => utils.dbRequest(res, [query.getAllCurrencies]));
 
 // добавление currencies
 router.post("/add", utils.isTokenValid, async (req, res) => {
@@ -36,7 +36,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
         if (index !== -1) return res.json({ status: "error", message: "Currency pair already in use" });
 
         // отправка запроса
-        utils.dbRequest(res, query.addCurrency, options, "Succes");
+        utils.dbRequest(res, [query.addCurrency, options], "Succes");
     });
 });
 
@@ -54,11 +54,11 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
         req.params.id
     ];
 
-    utils.dbRequest(res, query.editCurrency, options, "Succes");
+    utils.dbRequest(res, [query.editCurrency, options], "Succes");
 });
 
 // Удаление currencies
-router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, query.removeItem("user_currencies"), [req.params.id], "Succes"));
+router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, [query.removeItem("user_currencies"), [req.params.id]], "Succes"));
 
 module.exports = router;
 

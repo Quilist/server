@@ -4,9 +4,9 @@ const router = express.Router();
 const utils = require("../../utils");
 
 const config = require("../../../config.json");
-const db = require("../../../database");
+const db = require("../../../db/database");
 const passport = require("../../../passport-setup");
-const query = require("../../../dbRequests");
+const query = require("../../../db/dbRequests");
 
 const oAuthCallback = (req, res) => {
     /*

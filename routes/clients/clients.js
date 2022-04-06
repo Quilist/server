@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../dbRequests");
-const db = require("../../database");
+const query = require("../../db/dbRequests");
+const db = require("../../db/database");
 const utils = require("../utils");
 
 // получение всех клиентов пользователя
@@ -71,7 +71,7 @@ router.post("/add", utils.isTokenValid, (req, res) => {
     ]
 
     // отправка запроса
-    utils.dbRequest(res, query.AddClient, options, "Succes");
+    utils.dbRequest(res, [query.AddClient, options], "Succes");
 });
 
 // получение клиента по айди
@@ -121,10 +121,10 @@ router.post("/:id/edit", utils.isTokenValid, (req, res) => {
         req.params.id
     ]
     // отправка запроса
-    utils.dbRequest(res, query.UpdateClient, options, "Succes");
+    utils.dbRequest(res, [query.UpdateClient, options], "Succes");
 });
 
 // Удаление клиента
-router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, query.removeItem("clients"), [req.params.id], "Succes"));
+router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, [query.removeItem("clients"), [req.params.id]], "Succes"));
 
 module.exports = router;

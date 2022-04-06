@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../dbRequests");
-const db = require("../../database");
+const query = require("../../db/dbRequests");
+const db = require("../../db/database");
 const utils = require("../utils");
 
 // получение всех payments пользователя

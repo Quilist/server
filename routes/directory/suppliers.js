@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../dbRequests");
+const query = require("../../db/dbRequests");
 const utils = require("../utils");
 const youscore = require("../../services/youscore");
 
@@ -43,7 +43,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
     ]
 
     // отправка запроса
-    utils.dbRequest(res, query.AddSupplier, options, "Succes");
+    utils.dbRequest(res, [query.AddSupplier, options], "Succes");
 });
 
 // получение supplier по айди
@@ -84,10 +84,10 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
     ]
 
     // отправка запроса
-    utils.dbRequest(res, query.UpdateSupplier, options, "Succes");
+    utils.dbRequest(res, [query.UpdateSupplier, options], "Succes");
 });
 
 // Удаление supplier
-router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, query.removeItem("suppliers"), [req.params.id], "Succes"));
+router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, [query.removeItem("suppliers"), [req.params.id]], "Succes"));
 
 module.exports = router;

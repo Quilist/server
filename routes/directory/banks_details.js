@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../dbRequests");
+const query = require("../../db/dbRequests");
 const utils = require("../utils");
 
 // получение всех bank_details пользователя
@@ -18,7 +18,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
         checking_account
     ];
 
-    utils.dbRequest(res, query.addBankDetail, options, "Succes");
+    utils.dbRequest(res, [query.addBankDetail, options], "Succes");
 });
 
 // получение bank_details по айди
@@ -35,10 +35,10 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
         req.params.id
     ];
 
-    utils.dbRequest(res, query.editBankDetail, options, "Succes");
+    utils.dbRequest(res, [query.editBankDetail, options], "Succes");
 });
 
 // Удаление bank_details
-router.post("/:id/remove", utils.isTokenValid, async (req, res) => utils.dbRequest(res, query.removeItem("banks_details"), [req.params.id], "Succes"));
+router.post("/:id/remove", utils.isTokenValid, async (req, res) => utils.dbRequest(res, [query.removeItem("banks_details"), [req.params.id]], "Succes"));
 
 module.exports = router;
