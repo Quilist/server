@@ -47,6 +47,8 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
         JSON.stringify(stream)
     ];
 
+    console.log(options)
+
     utils.dbRequest(res, [query.addCashAccount, options], "Succes");
 });
 
