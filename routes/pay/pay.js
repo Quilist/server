@@ -16,7 +16,6 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
     const totals = req.body.totals || [];
 
     const arr = [...payments, ...changes, ...totals];
-
     // получение payments 
     const promise = new Promise((resolve, reject) => {
         db.query(`${query.getItems("pay")} AND id_type = ?`, [req.token.id, id_type], (err, result) => {

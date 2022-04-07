@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 
 const query = require("../../db/dbRequests");
-const db = require("../../db/database");
 const utils = require("../utils");
 
 // получение всех money пользователя
@@ -17,30 +16,32 @@ router.get("/", utils.isTokenValid, async (req, res) => {
     return utils.makeQuery(`${query.getItems(elem)} AND date_create > ? AND date_create < ?`, [req.token.id, date_from, date_to]);
   });
 
-  Promise.all(promises).then(elem => {
-    const array = [...elem[0], ...elem[1], ...elem[2]];
-    const size = array.length < limit ? array.length : limit;
+  Promise.all(promises)
+    .then(elem => {
+      const array = [...elem[0], ...elem[1], ...elem[2]];
+      const size = array.length < limit ? array.length : limit;
 
-    const subarray = [];
+      const subarray = [];
 
-    if (array.length !== 0) {
-      array.sort((a, b) => Number(b.date_create) - Number(a.date_create));
+      if (array.length !== 0) {
+        array.sort((a, b) => Number(b.date_create) - Number(a.date_create));
 
-      for (let i = 0; i < Math.ceil(array.length / size); i++) {
-        subarray.push(array.slice((i * size), (i * size) + size));
-      }
-    }
-
-    res.json({
-      status: "OK", message: {
-        items: subarray.length !== 0 ? subarray[page - 1] : [],
-        paginations: {
-          total: array.length,
-          last_page: subarray.length
+        for (let i = 0; i < Math.ceil(array.length / size); i++) {
+          subarray.push(array.slice((i * size), (i * size) + size));
         }
       }
-    });
-  });
+
+      res.json({
+        status: "OK", message: {
+          items: subarray.length !== 0 ? subarray[page - 1] : [],
+          paginations: {
+            total: array.length,
+            last_page: subarray.length
+          }
+        }
+      });
+    })
+    .catch(({ message }) => res.json({ status: "error", message }));
 });
 
 // Получение all_currencies, cash_accounts, legal_entites
@@ -82,17 +83,18 @@ router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
 
   const currencies = utils.makeQuery(query.getAllCurrencies);
 
-  Promise.all([...promises, currencies, types()]).then(elem => {
-
-    res.json({
-      status: "OK", message: {
-        cash_account: elem[0],
-        legal_entites: elem[1],
-        currencies: elem[2],
-        items: elem[3]
-      }
-    });
-  });
+  Promise.all([...promises, currencies, types()])
+    .then(elem => {
+      res.json({
+        status: "OK", message: {
+          cash_account: elem[0],
+          legal_entites: elem[1],
+          currencies: elem[2],
+          items: elem[3]
+        }
+      });
+    })
+    .catch(({ message }) => res.json({ status: "error", message }));
 });
 
 // добавление currency_exchange и moving_money
