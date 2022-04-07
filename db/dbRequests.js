@@ -121,3 +121,5 @@ module.exports = {
     editMovingMoney,
     addMovingMoney
 }
+
+// ALTER TABLE cash_and_accounts MODIFY id_user_currencies INT DEFAULT NULL, MODIFY id_bank_details INT DEFAULT NULL, MODIFY balanceIn decimal(15, 2) DEFAULT NULL, MODIFY turnoverDebt decimal(15, 2) DEFAULT NULL, MODIFY turnoverCred decimal(15, 2) DEFAULT NULL, MODIFY type varchar(68) DEFAULT NULL, MODIFY stream JSON DEFAULT NULL;

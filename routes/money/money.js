@@ -62,8 +62,12 @@ router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
 
   const user = { pay_owner: "user", receive_owner: "user" }
 
-  const promises = ["cash_accounts", "legal_entites"].map(elem => {
-    return utils.makeQuery(query.getItems(elem), req.token.id);
+  const promises = ["cash_accounts", "legal_entites"].map(async (elem) => {
+    utils.makeQuery(query.getItems(elem), req.token.id)
+      .then(result => { return result })
+      .catch(error => {
+        return res.json({ status: "error", message: error });
+      })
   })
 
   const types = () => {
