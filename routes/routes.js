@@ -47,11 +47,12 @@ router.use("/pay", payRouter);
 fs.readdir('./routes/directory', (err, files) => {
     files.forEach(elem => {
         if (elem === "items.js") return;
+        console.log(`/${elem.substring(0, elem.length - 3)}`)
         router.use(`/${elem.substring(0, elem.length - 3)}`, require(`${__dirname}/directory/${elem}`));
     });
 });
 
 router.use("/money", moneyRouter);
-router.use("/", itemsRouter);
+// router.use("/", itemsRouter);
 
 module.exports = router;
