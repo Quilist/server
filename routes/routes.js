@@ -52,6 +52,6 @@ fs.readdir('./routes/directory', (err, files) => {
 });
 
 router.use("/money", moneyRouter);
-// router.use("/", itemsRouter);
+router.use("/", itemsRouter);
 
 module.exports = router;
