@@ -44,7 +44,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
         turnoverDebt,
         turnoverCred,
         type,
-        stream
+        JSON.stringify(stream)
     ];
 
     utils.dbRequest(res, [query.addCashAccount, options], "Succes");
@@ -66,7 +66,7 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
         turnoverDebt,
         turnoverCred,
         type,
-        stream,
+        JSON.stringify(stream),
         req.params.id
     ];
 
