@@ -8,7 +8,7 @@ const monobank = require("../../services/banks/monobank");
 const privat24 = require("../../services/banks/privat24");
 
 // получение всех cash_accounts пользователя
-router.get("/", utils.isTokenValid, async (req, res) => utils.paginations(req, res, query.getItems("cash_accounts"), [req.token.id]));
+router.get("/", utils.isTokenValid, async (req, res) => utils.paginations(req, res, query.getItems("cash_and_accounts"), [req.token.id]));
 
 // добавление cash_accounts
 router.post("/add", utils.isTokenValid, async (req, res) => {
