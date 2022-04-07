@@ -46,7 +46,7 @@ const addBankDetail = "INSERT INTO banks_details (id_user, bank_name, MFO, check
 const editBankDetail = "UPDATE banks_details SET bank_name = ?, MFO = ?, checking_account = ? WHERE id = ?";
 
 // БД запросы к cashAccounts
-const addCashAccount = "INSERT INTO cash_and_accounts (id_user, id_type_order, name, id_user_currencies, id_bank_details, balanceIn, turnoverDebt, turnoverCred, type, stream) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+const addCashAccount = "INSERT INTO cash_and_accounts (id_user, id_type_order, name, id_user_currencies, id_bank_details, balanceIn, turnoverDebt, turnoverCred, type, stream) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 const editCashAccount = "UPDATE cash_and_accounts SET id_type_order = ?, name = ?, id_user_currencies = ?, id_bank_details = ?, balanceIn = ?, turnoverDebt = ?, turnoverCred = ?, type = ?, stream = ? WHERE id = ?";
 
 // БД запросы к Pay
