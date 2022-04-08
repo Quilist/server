@@ -15,10 +15,12 @@
     "gmail-send": "^1.8.14",
     "http-errors": "~1.6.3",
     "mysql": "^2.18.1",
+    "mysql2": "^2.3.3",
     "node-fetch": "^2.6.4",
     "passport": "^0.5.2",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
+    "sequelize": "^6.18.0",
     "watchman": "^1.0.0"
   }
 }

@@ -1,14 +1,14 @@
-const mysql = require("mysql");
+const { Sequelize } = require('sequelize');
 const config = require("../config.json");
 
-const connection = mysql.createConnection(config.MySql);
+const sequelize = new Sequelize(config.MySql.database, config.MySql.user, config.MySql.password, {
+    host: config.MySql.host,
+    port: config.MySql.port,
+    dialect: 'mysql'
+});
 
-connection.connect((error) => {
-    if (error) {
-        return console.log("Ошибка подключения к БД!");
-    } else {
-        return console.log("Подключение произошло успешно!");
-    }
-})
+sequelize.authenticate()
+    .then(() => console.log("Ошибка подключения к БД!"))
+    .catch(() => console.log("Ошибка подключения к БД!"));
 
-module.exports = connection;
+module.exports = sequelize;

@@ -127,92 +127,10 @@ function isTokenValid(req, res, next) {
     next();
 }
 
-function paginations(req, res, dbRequest, dbParam) {
-    /*
-     * Отправка запроса через функцию,
-     * для дальнейшего более удобного
-     * использования.
-     */
-    db.query(dbRequest, dbParam, (err, result) => {
-        if (err) return res.json({ status: "error", message: err.message });
-
-        const array = [...result];
-
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 25;
-        const size = array.length < limit ? array.length : limit;
-
-        const subarray = [];
-
-        if (array.length !== 0) {
-            for (let i = 0; i < Math.ceil(array.length / size); i++) {
-                subarray.push(array.slice((i * size), (i * size) + size));
-            }
-        }
-
-        res.json({
-            status: "OK", message: {
-                items: subarray.length !== 0 ? subarray[page - 1] : [],
-                paginations: {
-                    total: result.length,
-                    last_page: subarray.length
-                }
-            }
-        });
-    });
-}
-
-function dbRequest(...params) {
-    /*
-     * Отправка запроса через функцию,
-     * для дальнейшего более удобного
-     * использования.
-     */
-    db.query(...params[1], (err, result) => {
-        if (err) return params[0].json({ status: "error", message: err.message });
-
-        params[0].json({ status: "OK", message: params[2] || result });
-    });
-}
-
-function dbRequestFromId(res, req, dbRequest, dbParam) {
-    /*
-     * Отправка запроса через функцию,
-     * для дальнейшего более удобного
-     * использования.
-     */
-    db.query(dbRequest, dbParam, (err, result) => {
-        if (err) return res.json({ status: "error", message: err.message });
-        // проверка на пренадлежность к пользователю
-        if (result[0]?.id_user !== req.token.id) return res.json({ status: "error", message: "Action not allowed" });
-
-        res.json({ status: "OK", message: result.length !== 0 ? result[0] : [] });
-    });
-}
-
-function makeQuery(...params) {
-    /*
-     * Отправка запроса через функцию,
-     * для дальнейшего более удобного
-     * использования.
-     * (Эксперимент)
-     */
-    return new Promise((resolve, reject) => {
-        db.query(...params, (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-        });
-    });
-}
-
 module.exports = {
     stringHash,
     authToken,
     verificationCode,
     validateObjectSign,
-    isTokenValid,
-    dbRequest,
-    dbRequestFromId,
-    paginations,
-    makeQuery
+    isTokenValid
 }

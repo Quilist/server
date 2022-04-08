@@ -1,47 +1,43 @@
-const ExpressBrute = require("express-brute");
-const db = require("../../db/database")
-
 const express = require("express");
+const send = require("gmail-send");
 
 const router = express.Router();
-const send = require("gmail-send");
+
 const utils = require("../utils");
 const config = require("../../config.json");
-const query = require("../../db/dbRequests");
+const models = require("../../db/models");
 
 //Создание простой защиты от брутфорса
+const ExpressBrute = require("express-brute");
+
 const store = new ExpressBrute.MemoryStore();
 const bruteforce = new ExpressBrute(store);
 
 // Логин
 router.post("/login", bruteforce.prevent, (req, res) => {
-    let { email, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!req.body.email || !req.body.password) {
-        return res.json({ status: "error", message: "Nav.Authn, ValidationError" })
-    }
+    if (!email || !password) return res.json({ status: "error", message: "Nav.Authn, ValidationError" });
 
-    password = utils.stringHash(password);
+    models.User.findOne({ where: { e_mail: email } })
+        .then(result => {
+            const info = result.dataValues
 
-    db.query(query.GetUserByEmail, [email], (err, result) => {
-        if (err) {
-            return res.json({ status: "error", message: err.message });
-        }
+            if (!info || info?.pass !== utils.stringHash(password)) {
+                return res.json({ status: "error", message: "Nav.Authn, LoginError" });
+            }
 
-        if (result.length === 0 || result[0].pass !== password) {
-            return res.json({ status: "error", message: "Nav.Authn, LoginError" });
-        }
+            const authToken = utils.authToken(email, req.ip, info.id);
 
-        const authToken = utils.authToken(email, req.ip, result[0].id);
-        res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
-
-        res.json({ status: "OK", message: "Successful authentication" });
-    });
+            res.cookie("token", authToken, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, domain: "b-fin.tech" });
+            res.json({ status: "OK", message: "Successful authentication" });
+        })
+        .catch((err) => res.json({ status: "error", message: err.message }));
 });
 
 // Регистрация
 router.post("/registration", (req, res) => {
-    let { username, email, password } = req.body;
+    const { username, email, password } = req.body;
 
     // Перепроверка данных
     if (
@@ -52,37 +48,28 @@ router.post("/registration", (req, res) => {
         username?.length === 0 ||
         email?.length === 0 ||
         email?.indexOf("@") === -1
-    ) {
-        return res.json({ status: "error", message: "Nav.Registration, ValidationError" });
-    }
+    ) return res.json({ status: "error", message: "Nav.Registration, ValidationError" });
 
-    db.query(query.GetUserByEmail, [email], (err, result) => {
-        if (err) {
-            return res.json({ status: "error", message: "Nav.Registration, InfoMessage" });
-        }
+    models.User.findOne({ where: { e_mail: email } })
+        .then(result => {
+            if (result) return res.json({ status: "error", message: "Nav.Registration, EmailRegistered" });
 
-        if (result.length !== 0) {
-            return res.json({ status: "error", message: "Nav.Registration, EmailRegistered" });
-        }
+            const code = utils.verificationCode(username, email, password);
 
-        const code = utils.verificationCode(username, email, password);
+            send({
+                user: config.Gmail.email,
+                pass: config.Gmail.password,
+                to: email,
+                subject: "B-fin account activation code."
+            })({
+                text: `https://${config.ServerDomain}/auth/activation?code=${code}`
+            }, (err, result, fullResult) => {
+                if (err) return res.json({ status: "error", message: err.message });
 
-        // Отправка кода активации
-        send({
-            user: config.Gmail.email,
-            pass: config.Gmail.password,
-            to: email,
-            subject: "B-fin account activation code."
-        })({
-            text: `https://${config.ServerDomain}/auth/activation?code=${code}`
-        }, (err, result, fullResult) => {
-            if (err) {
-                return res.json({ status: "error", message: `https://${config.ServerDomain}/auth/activation?code=${code}` });
-            }
-
-            res.json({ status: "OK", message: "Nav.Registration, EmailSent" });
-        });
-    });
+                res.json({ status: "OK", message: "Nav.Registration, EmailSent" });
+            });
+        })
+        .catch((err) => res.json({ status: "error", message: err.message }));
 });
 
 // Активация аккаунта
@@ -95,148 +82,101 @@ router.get("/activation", (req, res) => {
      * можно считать почту подтвержденной.
      * Ссылка действует час.
      */
-
     let code = req.query.code;
 
     // Проверка на наличие кода
-    if (!code) {
-        // return res.json({ status: "error", message: "Nav.Profile, ConfirmError" });
-        return res.redirect(`${config.SiteLink}/error-auth`);
-    }
+    if (!code) return res.json({ status: "error", message: "Nav.Profile, ConfirmError" });
 
     code = utils.validateObjectSign(code);
 
     // Проверка на валидность кода
-    if (!code) {
-        // return res.json({ status: "error", message: "Nav.Profile, InvalidCode" });
-        return res.redirect(`${config.SiteLink}/error-auth`);
-    }
+    if (!code) return res.json({ status: "error", message: "Nav.Profile, InvalidCode" });
 
-    let { username, email, password, exp } = code;
+    const { username, email, password, exp } = code;
 
     // Проверка на то, не истек ли срок годности кода
-    if (exp < Date.now()) {
-        // return res.json({ status: "error", message: "Nav.Profile, TimeoutError" });
-        return res.redirect(`${config.SiteLink}/error-auth`);
+    if (exp < Date.now()) return res.json({ status: "error", message: "Nav.Profile, TimeoutError" });
 
-    }
+    models.User.findOne({ where: { e_mail: email } })
+        .then(result => {
+            if (result) return res.json({ status: "error", message: "Nav.Registration, EmailRegistered" });
 
-    db.query(query.GetUserByEmail, [email], (err, result) => {
-        if (err) {
-            // return res.json({ status: "error", message: err.message });
-            return res.redirect(`${config.SiteLink}/error-auth`);
-        }
+            models.User.create({ username: username, e_mail: email, pass: password })
+                .then(result => {
+                    const authToken = utils.authToken(email, req.ip, result.dataValues.id);
+                    res.cookie("token", authToken, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, domain: "b-fin.tech" })
 
-        if (result.length !== 0) {
-            // return res.json({ status: "error", message: "Nav.Registration, EmailRegistered" });
-            return res.redirect(`${config.SiteLink}/error-auth`);
-        }
-
-        db.query(query.AddUser, [username, email, password, undefined, undefined], (err, result) => {
-            if (err) {
-                return res.json({ status: "error", message: err.message });
-            }
-
-            db.query(query.GetUserByEmail, [email], (err, result) => {
-                if (err) {
-                    // return res.json({ status: "error", message: err.message });
-                    return res.redirect(`${config.SiteLink}/error-auth`);
-                }
-
-                const authToken = utils.authToken(email, req.ip, result[0].id);
-                res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
-
-                res.redirect(`${config.SiteLink}/dashboard`);
-            });
-        });
-    });
+                    res.redirect(`${config.SiteLink}/dashboard`);
+                })
+                .catch((err) => res.json({ status: "error", message: err.message }));
+        })
+        .catch((err) => res.json({ status: "error", message: err.message }));
 });
 
 // Восстановление пароля
 router.get("/restoration", (req, res) => {
     const email = req.query.email
 
-    if (!email) {
-        return res.json({ status: "error", message: "Nav.Restore, ValidationError" });
-    }
+    if (!email) return res.json({ status: "error", message: "Nav.Restore, ValidationError" });
 
-    db.query(query.GetUserByEmail, [email], (err, result) => {
-        if (err) {
-            return res.json({ status: "error", message: err.message });
-        }
+    models.User.findOne({ where: { e_mail: email } })
+        .then(result => {
+            const info = result.dataValues
 
-        if (result.length === 0) {
-            return res.json({ status: "error", message: "Nav.Registration, EmailNotRegistered" });
-        }
+            if (!info) return res.json({ status: "error", message: "Nav.Registration, EmailNotRegistered" });
 
-        const code = utils.restorationCode(email);
+            const code = utils.restorationCode(email);
+            // Отправка кода восстановления
+            send({
+                user: config.Gmail.email,
+                pass: config.Gmail.password,
+                to: email,
+                subject: "B-fin restoration code",
+            })({
+                text: `${config.SiteLink}/password-recovery?code=${code}`
+            }, (error, result, fullResult) => {
+                if (error) return res.json({ status: "error", message: "Nav.Registration, InfoMessage" });
 
-        // Отправка кода восстановления
-        send({
-            user: config.Gmail.email,
-            pass: config.Gmail.password,
-            to: email,
-            subject: "B-fin restoration code",
-        })({
-            text: `${config.SiteLink}/password-recovery?code=${code}`
-        }, (error, result, fullResult) => {
-            if (error) {
-                return res.json({ status: "error", message: "Nav.Registration, InfoMessage" });
-            }
-
-            res.json({ status: "OK", message: "Nav.Registration, EmailSent" });
-        });
-    });
+                res.json({ status: "OK", message: "Nav.Registration, EmailSent" });
+            });
+        })
+        .catch((err) => res.json({ status: "error", message: err.message }));
 });
 
 // Смена пароля
 router.post("/change-password", async (req, res) => {
     let { password, code } = req.body;
 
-    if (!code) {
-        return res.json({ status: "error", message: "Nav.Profile, ConfirmError" });
-    }
+    if (!code) return res.json({ status: "error", message: "Nav.Profile, ConfirmError" });
 
     code = utils.validateObjectSign(code);
 
-    if (!code) {
-        return res.json({ status: "error", message: "Nav.Profile, InvalidCode" });
-    }
+    if (!code) return res.json({ status: "error", message: "Nav.Profile, InvalidCode" });
 
-    let { email, exp } = code;
+    const { email, exp } = code;
 
-    if (exp < Date.now()) {
-        return res.json({ status: "error", message: "Nav.Profile, TimeoutError" });
-    }
+    if (exp < Date.now()) return res.json({ status: "error", message: "Nav.Profile, TimeoutError" });
 
     if (
         !password?.length > 6 ||
         !password?.match(/[a-z]/g) ||
         !password?.match(/[A-Z]/g) ||
         !password?.match(/[0-9]/g)
-    ) {
-        return res.json({ status: "error", message: "Nav.Registration, ValidationError" });
-    }
+    ) return res.json({ status: "error", message: "Nav.Registration, ValidationError" });
 
     password = utils.stringHash(password);
 
-    db.query(query.GetUserByEmail, [email], (err, result) => {
-        if (err) {
-            return res.json({ status: "error", message: err.message });
-        }
+    models.User.findOne({ where: { e_mail: email } })
+        .then(result => {
+            const info = result.dataValues
 
-        if (result[0]?.pass === password) {
-            return res.json({ status: "error", message: "Nav.Profile, InvalidPassword" })
-        }
+            if (!info.pass === password) return res.json({ status: "error", message: "Nav.Profile, InvalidPassword" });
 
-        db.query(query.UpdateUserPassword, [password, email], (err, result) => {
-            if (err) {
-                return res.json({ status: "error", message: err.message });
-            }
-
-            res.json({ status: "OK", message: "Nav.RestoreForm, ChangePassword" });
-        });
-    });
+            models.User.update({ pass: password }, { where: { e_mail: email } })
+                .then(() => res.json({ status: "OK", message: "Nav.RestoreForm, ChangePassword" }))
+                .catch((err) => res.json({ status: "error", message: err.message }));
+        })
+        .catch((err) => res.json({ status: "error", message: err.message }));
 });
 
 module.exports = router;

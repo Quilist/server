@@ -175,7 +175,7 @@ router.post("/:id/edit", utils.isTokenValid, (req, res) => {
                 const index = arr.findIndex((el) => el.id === payTypeResult[i].id);
                 // если айди не найден, то удаляем запись
                 if (index === -1) {
-                    return utils.makeQuery(query.removeItem("pay_type"), [req.query.id]);
+                    return utils.makeQuery(query.removeItem("pay_type"), [req.params.id]);
                 }
             }
         })

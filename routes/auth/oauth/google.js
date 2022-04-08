@@ -4,9 +4,9 @@ const router = express.Router();
 const utils = require("../../utils");
 
 const config = require("../../../config.json");
-const db = require("../../../db/database");
 const passport = require("../../../passport-setup");
-const query = require("../../../db/dbRequests");
+
+const models = require("../../../db/models");
 
 const oAuthCallback = (req, res) => {
     /*
@@ -21,54 +21,37 @@ const oAuthCallback = (req, res) => {
      * по завершению операции вход подтверждается.
      */
     const email = req.user._json.email;
-    
+
     if (!email) {
         return res.json({ status: "error", message: "Google email not found." });
     }
 
     const password = utils.stringHash(email);
 
-    db.query(query.GetUserByEmail, [email], (err, result) => {
-        if (err) {
-            return res.json({ status: "error", message: err.message });
-        }
+    models.User.findOne({ where: { e_mail: email } })
+        .then(result => {
 
-        if (result.length === 0) {
-            db.query(query.AddUser, [email.split("@")[0], email, password, req.user.raw, undefined], (err, result) => {
-                if (err) {
-                    return res.json({ status: "error", message: err.message });
-                }
+            if (!result) {
 
-                db.query(query.GetUserByEmail, [email], (err, result) => {
-                    if (err) {
-                        // return res.json({ status: "error", message: err.message });
-                        return res.redirect(`${config.SiteLink}/error-auth`);
-                    }
-    
-                    const authToken = utils.authToken(email, req.ip, result[0].id);
-                    res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
-    
-                    res.redirect(`${config.SiteLink}/dashboard`);    
-                });
-            });
-            return;
-        }
+                models.User.create({ e_mail: email, pass: password, google: req.user.raw })
+                    .then(res => {
+                        const authToken = utils.authToken(email, req.ip, result.dataValues.id);
 
-        if (result[0].pass === password) {
-            if (!result[0].google) {
-                db.query(query.UpdateUserGoogleAccount, [req.user.raw, email], (err, result) => {
-                    if (err) return res.json({ status: "error", message: err.message });
-                });
+                        res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" }).redirect(`${config.SiteLink}/dashboard`);
+                    })
+                    .catch(err => res.json({ status: "error", message: err.message }));
+
+            } else {
+                if (result.dataValues.pass !== password) return res.json({ status: "error", message: "Nav.Authn, LoginError" });
+
+                if (!result.dataValues.google) models.User.update({ google: req.user.raw }, { where: { e_mail: email } })
+
+                const authToken = utils.authToken(email, req.ip, result[0].id);
+
+                res.cookie("token", authToken, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, domain: "b-fin.tech" }).redirect(`${config.SiteLink}/dashboard`);
             }
-
-            const authToken = utils.authToken(email, req.ip, result[0].id);
-            res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
-
-            res.redirect(`${config.SiteLink}/dashboard`);
-        } else {
-            res.json({ status: "error", message: "Nav.Authn, LoginError" });
-        }
-    });
+        })
+        .catch(err => res.json({ status: "error", message: err.message }))
 }
 
 /*

@@ -1,96 +1,80 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../db/dbRequests");
-const db = require("../../db/database");
+const models = require("../../db/models");
 const utils = require("../utils");
 
 // получение всех клиентов пользователя
 router.get("/", utils.isTokenValid, (req, res) => {
-    db.query(query.getItems("clients"), [req.token.id], (err, result) => {
-        if (err) return res.json({ status: "error", message: err.message });
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 25;
 
-        const array = [...result];
+    models.Clients.findAll({ offset: page - 1, limit: limit, where: { id_user: req.token.id } })
+        .then(result => {
+            const subarray = result.map(elem => elem.dataValues);
 
-        const page = Number(req.query.page) || 1;
-        const limit = Number(req.query.limit) || 25;
-        const size = array.length < limit ? array.length : array.length / limit;
-
-        const subarray = [];
-
-        for (const index in result) {
-            result[index].mobile = result[index]?.mobile.split(";")
-            result[index].mail = result[index]?.mail.split(";")
-        }
-
-        if (array.length !== 0) {
-            for (let i = 0; i < Math.ceil(array.length / size); i++) {
-                subarray.push(array.slice((i * size), (i * size) + size));
+            for (const index in result) {
+                result[index].mobile = result[index]?.mobile.split(";")
+                result[index].mail = result[index]?.mail.split(";")
             }
-        }
 
-        res.json({
-            status: "OK", message: {
-                items: subarray[page - 1],
-                paginations: {
-                    total: result.length,
-                    last_page: subarray.length
+            const total = await models.Clients.count();
+            
+            res.json({
+                status: "OK", message: {
+                    items: subarray,
+                    paginations: {
+                        total: total,
+                        last_page: total <= limit ? 1 : total / limit
+                    }
                 }
-            }
-        });
-    });
+            });
+        })
+        .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // добавление клиента
 router.post("/add", utils.isTokenValid, (req, res) => {
-    const { name, mobile, company, mail, address, notes } = req.body;
+    const { name, mobile, mail } = req.body;
 
-    if (name.length < 3) return res.json({ status: "error", message: "incorrect name" })
+    if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
 
     let mobiles = "";
     for (const index in mobile) {
-        if (mobile[index].length !== 10 && mobile[index].length !== 0) {
+        if (mobile[index].length !== 10) {
             return res.json({ status: "error", message: "incorrect phone" });
         }
-
         mobiles += mobile[index] + ";"
     }
 
     let mails = "";
     for (const index in mail) mails += mail[index] + ";"
 
-    const options = [
-        req.token.id,
-        name,
-        mobiles,
-        company,
-        mails,
-        undefined,
-        address,
-        notes
-    ]
-
     // отправка запроса
-    utils.dbRequest(res, [query.AddClient, options], "Succes");
+    models.Clients.create({ id_user: req.token.id, ...req.body })
+        .then(() => res.json({ status: "OK", message: "Succes" }))
+        .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // получение клиента по айди
 router.get("/:id", utils.isTokenValid, (req, res) => {
     // отправка запроса
-    db.query(query.getItem("clients"), [req.params.id], (err, result) => {
-        if (err) return res.json({ status: "error", message: err.message });
+    models.Clients.findOne({ where: { id: req.params.id } })
+        .then((result) => {
+            if (!result) return res.json({ status: "error", message: "Unknow id" });
 
-        // проверка на пренадлежность клиента к пользователю
-        if (result[0]?.id_user === req.token.id) {
+            let elem = result.dataValues;
+            // проверка на пренадлежность клиента к пользователю
+            if (elem.id_user !== req.token.id) {
+                return res.json({ status: "error", message: "Action not allowed" });
+            }
 
-            result[0].mobile = result[0]?.mobile.split(";")
-            result[0].mail = result[0]?.mail.split(";")
+            elem.mobile = result[0]?.mobile.split(";")
+            elem.mail = result[0]?.mail.split(";")
 
-            res.json({ status: "OK", message: result[0] });
-        } else {
-            res.json({ status: "error", message: "Action not allowed" })
-        }
-    });
+            res.json({ status: "OK", message: elem });
+        })
+        .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // редактирование клиента
@@ -101,30 +85,26 @@ router.post("/:id/edit", utils.isTokenValid, (req, res) => {
 
     let mobiles = "";
     for (const index in mobile) {
-        if (mobile[index].length !== 10 && mobile[index].length !== 0) {
+        if (mobile[index].length !== 10) {
             return res.json({ status: "error", message: "incorrect phone" })
         }
-
         mobiles += mobile[index] + ";"
     }
 
     let mails = "";
     for (const index in mail) mails += mail[index] + ";";
 
-    const options = [
-        name,
-        mobiles,
-        company,
-        mails,
-        address,
-        notes,
-        req.params.id
-    ]
     // отправка запроса
-    utils.dbRequest(res, [query.UpdateClient, options], "Succes");
+    models.Clients.update({ ...req.body }, { where: { id: req.params.id } })
+        .then(() => res.json({ status: "OK", message: "Succes" }))
+        .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // Удаление клиента
-router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, [query.removeItem("clients"), [req.params.id]], "Succes"));
+router.post("/:id/remove", utils.isTokenValid, (req, res) => {
+    models.Clients.destroy({ where: { id: req.params.id } })
+        .then(() => res.json({ status: "OK", message: "Succes" }))
+        .catch(err => res.json({ status: "error", message: err.message }));
+});
 
 module.exports = router;
