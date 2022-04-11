@@ -4,6 +4,7 @@ const session = require('express-session');
 
 const passport = require("./passport-setup");
 const config = require("./config.json");
+const errorMiddleware = require("./middlewares/error-middleware");
 
 /*
  * Инициализация фреймворка Express.
@@ -39,9 +40,6 @@ app.use(cookieParser());
 
 app.use("/", apiRouter);
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
+app.use(errorMiddleware);
 
 module.exports = app;

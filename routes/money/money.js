@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../db/dbRequests");
-const utils = require("../utils");
+const prisma = require("../../database/database");
+const utils = require("../utils/utils");
+const itemsController = require("../utils/items/items-controller");
 
 // получение всех money пользователя
 router.get("/", utils.isTokenValid, async (req, res) => {

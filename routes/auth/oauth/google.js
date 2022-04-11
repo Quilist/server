@@ -1,12 +1,12 @@
 const express = require("express");
 
 const router = express.Router();
-const utils = require("../../utils");
+const utils = require("../../../controllers/utils");
 
-const config = require("../../../config.json");
 const passport = require("../../../passport-setup");
+const config = require("../../../config.json");
 
-const models = require("../../../db/models");
+const prisma = require("../../../database/database");
 
 const oAuthCallback = (req, res) => {
     /*
@@ -28,30 +28,31 @@ const oAuthCallback = (req, res) => {
 
     const password = utils.stringHash(email);
 
-    models.User.findOne({ where: { e_mail: email } })
+    prisma.user.findMany({ where: { e_mail: email } })
         .then(result => {
 
-            if (!result) {
+            if (!result.length) {
 
-                models.User.create({ e_mail: email, pass: password, google: req.user.raw })
+                prisma.user.create({ data: { e_mail: email, pass: password, google: req.user.raw } })
                     .then(res => {
-                        const authToken = utils.authToken(email, req.ip, result.dataValues.id);
+                        const authToken = utils.authToken(email, req.ip, result[0].id);
 
-                        res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" }).redirect(`${config.SiteLink}/dashboard`);
+                        res.cookie("token", authToken, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, domain: "b-fin.tech" });
+                        res.redirect(`${config.SiteLink}/dashboard`);;
                     })
                     .catch(err => res.json({ status: "error", message: err.message }));
-
             } else {
-                if (result.dataValues.pass !== password) return res.json({ status: "error", message: "Nav.Authn, LoginError" });
+                if (result[0].pass !== password) return res.json({ status: "error", message: "Nav.Authn, LoginError" });
 
-                if (!result.dataValues.google) models.User.update({ google: req.user.raw }, { where: { e_mail: email } })
+                if (!result[0].google) await prisma.user.update({ data: { google: req.user.raw }, where: { e_mail: email } })
 
                 const authToken = utils.authToken(email, req.ip, result[0].id);
 
-                res.cookie("token", authToken, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, secure: true, domain: "b-fin.tech" }).redirect(`${config.SiteLink}/dashboard`);
+                res.cookie("token", authToken, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, domain: "b-fin.tech" });
+                res.redirect(`${config.SiteLink}/dashboard`);
             }
         })
-        .catch(err => res.json({ status: "error", message: err.message }))
+        .catch(err => res.json({ status: "error", message: err.message }));
 }
 
 /*

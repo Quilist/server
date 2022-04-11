@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../db/dbRequests");
-const utils = require("../utils");
+const prisma = require("../../database/database");
+const utils = require("../utils/utils");
+const itemsController = require("../utils/items/items-controller");
 
 const monobank = require("../../services/banks/monobank");
 const privat24 = require("../../services/banks/privat24");

@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 
 const config = require("../config.json");
-const db = require("../db/database");
+const apiError = require("../exceptions/error");
 
 // KEY - бинарное представление ключа из конфига.
 
@@ -45,10 +45,10 @@ function validateObjectSign(encodedObject) {
      * по завершению операции возвращается обьект прошел проверку,
      * если же это не так - возвращается undefined.
      */
-    const mac = crypto.createHmac("sha1", KEY);
-    const string = Buffer.from(encodedObject, "base64").toString("utf-8");
-
     try {
+        const mac = crypto.createHmac("sha1", KEY);
+        const string = Buffer.from(encodedObject, "base64").toString("utf-8");
+
         const object = JSON.parse(string);
         const sign = object.signature
         delete object.signature
@@ -57,7 +57,7 @@ function validateObjectSign(encodedObject) {
             mac.update(Buffer.from(JSON.stringify(object[key])));
         }
 
-        if (sign === mac.digest().toString("hex")) return object
+        if (sign === mac.digest().toString("hex")) return object;
     } catch (e) {
         return undefined;
     }
@@ -105,10 +105,7 @@ function isTokenValid(req, res, next) {
     const token = validateObjectSign(req.cookies.token);
 
     if (!token) {
-        return res.json({
-            status: "error",
-            message: "Invalid session"
-        });
+        return res.json({ status: "error", message: "Invalid session" });
     }
 
     const tokenKeys = Object.keys(token);
@@ -116,10 +113,7 @@ function isTokenValid(req, res, next) {
 
     for (const key in validateKeys) {
         if (!tokenKeys[key]) {
-            return res.json({
-                status: "error",
-                message: "Invalid session"
-            });
+            return res.json({ status: "error", message: "Invalid session" });
         }
     }
 
@@ -131,6 +125,7 @@ module.exports = {
     stringHash,
     authToken,
     verificationCode,
+    restorationCode,
     validateObjectSign,
     isTokenValid
 }

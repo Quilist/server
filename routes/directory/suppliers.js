@@ -1,18 +1,18 @@
 const express = require("express");
 const router = express.Router();
 
-const query = require("../../db/dbRequests");
-const utils = require("../utils");
-const youscore = require("../../services/youscore");
+const prisma = require("../../database/database");
+const utils = require("../../controllers/utils");
+const itemsController = require("../../controllers/items/items-controller");
 
 // получение всех suppliers пользователя
-router.get("/", utils.isTokenValid, (req, res) => utils.paginations(req, res, query.getItems("suppliers"), [req.token.id]));
+router.get("/", utils.isTokenValid, itemsController.all);
 
 // добавление supplier
 router.post("/add", utils.isTokenValid, async (req, res) => {
-    let { name, mobile, mail, company, edrpou, address, notes, nds, code_nds } = req.body;
+    let { name, mobile, company, edrpou, nds, code_nds } = req.body;
 
-    if (name.length < 3 || mobile.length !== 10) {
+    if (name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
     }
 
@@ -29,31 +29,20 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
         }
     }
 
-    const options = [
-        req.token.id,
-        name,
-        mobile,
-        company,
-        mail,
-        edrpou,
-        address,
-        notes,
-        nds,
-        code_nds
-    ]
-
     // отправка запроса
-    utils.dbRequest(res, [query.AddSupplier, options], "Succes");
+    prisma.suppliers.create({ data: { id_user: req.token.id, name, mobile, company, edrpou, nds, code_nds } })
+        .then(() => res.json({ status: "OK", message: "Succes" }))
+        .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // получение supplier по айди
-router.get("/:id", utils.isTokenValid, (req, res) => utils.dbRequestFromId(res, req, query.getItem("suppliers"), [req.params.id]));
+router.get("/:id", utils.isTokenValid, itemsController.id);
 
 // редактирование supplier
 router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
-    let { name, mobile, mail, company, edrpou, address, notes, nds, code_nds } = req.body;
+    let { name, mobile, company, edrpou, nds, code_nds } = req.body;
 
-    if (name.length < 3 || mobile.length !== 10) {
+    if (name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
     }
 
@@ -70,24 +59,13 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
         }
     }
 
-    const options = [
-        name,
-        mobile,
-        company,
-        mail,
-        edrpou,
-        address,
-        notes,
-        nds,
-        code_nds,
-        req.params.id
-    ]
-
     // отправка запроса
-    utils.dbRequest(res, [query.UpdateSupplier, options], "Succes");
+    prisma.suppliers.update({ data: req.token.id, name, mobile, company, edrpou, nds, code_nds, where: { id: req.params.id } })
+        .then(() => res.json({ status: "OK", message: "Succes" }))
+        .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // Удаление supplier
-router.post("/:id/remove", utils.isTokenValid, (req, res) => utils.dbRequest(res, [query.removeItem("suppliers"), [req.params.id]], "Succes"));
+router.post("/:id/remove", utils.isTokenValid, itemsController.delete);
 
 module.exports = router;

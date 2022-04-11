@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 
 const youscore = require("../services/youscore");
-const utils = require("./utils");
+const utils = require("../controllers/utils");
 
 const authRouter = require("./auth/auth");
 const googleAuthRouter = require("./auth/oauth/google");
@@ -13,7 +13,6 @@ const facebookAuthRouter = require("./auth/oauth/facebook");
 const clientsRouter = require("./clients/clients");
 const payRouter = require("./pay/pay");
 
-const itemsRouter =  require("./directory/items");
 const moneyRouter = require("./money/money");
 /*
  * Роуты.
@@ -25,7 +24,7 @@ router.get("/edrpou-info/:edrpou", utils.isTokenValid, async (req, res) => {
     const vat = await youscore.vat(req.params.edrpou);
     const info = await youscore.companyInfo(req.params.edrpou);
 
-    if (vat === undefined || vat?.code === "InvalidParameters") return res.json({ status: "error", message: "invalid ? edrpou" });
+    if (!vat.length || vat?.code === "InvalidParameters") return res.json({ status: "error", message: "invalid ? edrpou" });
 
     res.json({
         status: "OK", message: {
@@ -46,12 +45,10 @@ router.use("/pay", payRouter);
 
 fs.readdir('./routes/directory', (err, files) => {
     files.forEach(elem => {
-        if (elem === "items.js") return;
         router.use(`/${elem.substring(0, elem.length - 3)}`, require(`${__dirname}/directory/${elem}`));
     });
 });
 
 router.use("/money", moneyRouter);
-router.use("/", itemsRouter);
 
 module.exports = router;
