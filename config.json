@@ -1,1 +1,35 @@
-{}
+{
+  "key": "key",
+  "apiKey": "wefwef",
+
+  "GoogleClientID": "wefwe",
+  "GoogleClientSecret": "wefwe",
+  "GoogleResponseCallback": "https://api.b-fin.tech/auth/google/callback",
+
+  "FacebookClientID": "wefwef",
+  "FacebookClientSecret": "wefwef",
+  "FacebookResponseCallback": "https://api.b-fin.tech/auth/facebook/callback",
+
+  "ServerDomain": "api.b-fin.tech",
+
+  "SiteLink": "https://b-fin.tech",
+
+  "MySql": {
+    "host": "localhost",
+    "user": "root",
+    "password": "",
+    "port": 3306,
+    "database": "bfin",
+    "multipleStatements": "true"
+  },
+
+  "Gmail": {
+    "email": "hthrh",
+    "password": "rthrth"
+  },
+
+  "privat24": {
+    "id": "345",
+    "password": "rthrth"
+  }
+}
