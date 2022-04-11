@@ -8,7 +8,7 @@ const config = require("../../../config.json");
 
 const prisma = require("../../../database/database");
 
-const oAuthCallback = (req, res) => {
+const oAuthCallback = async (req, res) => {
     /*
      * Колбэк для фейсбука.
      *

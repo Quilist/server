@@ -18,7 +18,7 @@ router.get("/", utils.isTokenValid, async (req, res) => {
 
 // получение all_currencies
 router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
-    prisma.all_currencies.findMany()
+    prisma.currencies.findMany()
         .then((res) => res.json({ status: "OK", message: res }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
