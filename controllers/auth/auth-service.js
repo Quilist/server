@@ -1,7 +1,7 @@
 const gmail_send = require("gmail-send");
 
 const config = require("../../config.json");
-const prisma = require("../database/database");
+const prisma = require("../../database/database");
 const utils = require("../utils");
 const apiError = require("../../exceptions/error");
 

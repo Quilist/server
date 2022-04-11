@@ -10,7 +10,7 @@ router.get("/", utils.isTokenValid, (req, res) => {
     const limit = Number(req.query.limit) || 25;
 
     prisma.clients.findMany({ skip: limit * (page - 1), take: limit })
-        .then(result => {
+        .then(async result => {
 
             for (const index in result) {
                 result[index].mobile = result[index]?.mobile.split(";")
