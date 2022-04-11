@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const prisma = require("../../database/database");
-const utils = require("../utils/utils");
-const itemsController = require("../utils/items/items-controller");
+const utils = require("../../controllers/utils");
+const itemsController = require("../../controllers/items/items-controller");
 
 // получение всех payments пользователя
 router.get("/", utils.isTokenValid, async (req, res) => utils.paginations(req, res, query.getItems("pay"), [req.token.id]));

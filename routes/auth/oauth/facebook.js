@@ -30,7 +30,7 @@ const oAuthCallback = async (req, res) => {
     const password = utils.stringHash(email);
 
     prisma.user.findMany({ where: { e_mail: email } })
-        .then(result => {
+        .then(async result => {
 
             if (!result.length) {
 
