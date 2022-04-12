@@ -59,7 +59,7 @@ class UserService {
 
         const dateMs = Date.now();
 
-        const data = await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: dateMs, updated_at: dateMs } });
+        const data = await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: BigInt(dateMs), updated_at: BigInt(dateMs) } });
 
         return utils.authToken(email, ip, data.id)
     }
