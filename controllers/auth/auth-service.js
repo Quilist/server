@@ -21,8 +21,8 @@ class UserService {
             to: email,
             subject: "B-fin account activation code."
         })({ text: `https://${config.ServerDomain}/auth/activation?code=${code}` }, (err, result, fullResult) => {
-            // if (err) throw apiError.badRequest(err.message);
-
+            if (err) throw apiError.badRequest(err.message);
+        
             return result;
         });
     }
