@@ -33,6 +33,8 @@ class UserService {
         const data = await prisma.user.findMany({ where: { e_mail: email } })
 
         if (data[0]?.pass !== utils.stringHash(password)) {
+            console.log(data)
+            console.log(utils.stringHash(password))
             throw apiError.badRequest("Nav.Authn, LoginError");
         }
 
