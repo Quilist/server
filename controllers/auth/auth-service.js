@@ -57,7 +57,7 @@ class UserService {
 
         if (array.length) throw apiError.badRequest("Nav.Registration, EmailRegistered");
 
-        await prisma.user.create({ data: { username: username, e_mail: email, pass: password } });
+        await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: Date.now(), updated_at: Date.now() } });
 
         return utils.authToken(email, req.ip, res.id)
     }
@@ -100,7 +100,7 @@ class UserService {
 
         const array = await prisma.user.findMany({ where: { e_mail: email } })
         if (!array.length || !array[0].pass === password) throw apiError.badRequest("Nav.Profile, InvalidPassword");
- 
+
         return await prisma.user.update({ where: { e_mail: email }, data: { pass: password } });
     }
 }
