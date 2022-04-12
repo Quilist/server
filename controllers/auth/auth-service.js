@@ -58,7 +58,7 @@ class UserService {
 
         if (array.length) throw ApiError.badRequest("Nav.Registration, EmailRegistered");
 
-        const dateMs = Date.now();
+        const dateMs = String(Date.now());
 
         const data = await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: dateMs, updated_at: dateMs } });
 
