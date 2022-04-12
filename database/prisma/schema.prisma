@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id               BigInt             @id @default(autoincrement())
+  id               Int                @id @default(autoincrement())
   acc              String?
   f_name           String?
   s_name           String?
@@ -23,9 +23,9 @@ model User {
   facebook         String?
   address          String?
   notes            String?
-  created_at       BigInt
-  updated_at       BigInt
-  deleted_at       BigInt?
+  created_at       String
+  updated_at       String
+  deleted_at       String?
   products         Product[]
   banks_details    BankDetail[]
   cash_accounts    CashAccount[]
@@ -51,6 +51,8 @@ model Currency {
   id                       Int                  @id @default(autoincrement())
   name                     String?
   represent                String?
+  created_at               String
+  updated_at               String
   cash_accounts_balance    CashAccountBalance[]
   from_currencies_exchange CurrencyExchange[]   @relation("FromExhangeCurrency")
   to_currencies_exchange   CurrencyExchange[]   @relation("ToExhangeCurrency")
@@ -61,60 +63,74 @@ model Currency {
 model BankDetail {
   id               Int           @id @default(autoincrement())
   user             User          @relation(fields: [user_id], references: [id])
-  user_id          BigInt
+  user_id          Int
   bank_name        String        @unique
   MFO              String?
   checking_account String?
+  created_at       String
+  updated_at       String
   cash_accounts    CashAccount[]
 
   @@map("bank_detail")
 }
 
 model Expenditure {
-  id      Int    @id @default(autoincrement())
-  user    User   @relation(fields: [user_id], references: [id])
-  user_id BigInt
-  name    String @unique
+  id         Int    @id @default(autoincrement())
+  user       User   @relation(fields: [user_id], references: [id])
+  user_id    Int
+  name       String @unique
+  created_at String
+  updated_at String
 }
 
 model IncomeItem {
-  id      Int    @id @default(autoincrement())
-  user    User   @relation(fields: [user_id], references: [id])
-  user_id BigInt
-  name    String @unique
+  id         Int    @id @default(autoincrement())
+  user       User   @relation(fields: [user_id], references: [id])
+  user_id    Int
+  name       String @unique
+  created_at String
+  updated_at String
 
   @@map("income_item")
 }
 
 model Measure {
-  id      Int    @id @default(autoincrement())
-  user    User   @relation(fields: [user_id], references: [id])
-  user_id BigInt
-  name    String @unique
+  id         Int    @id @default(autoincrement())
+  user       User   @relation(fields: [user_id], references: [id])
+  user_id    Int
+  name       String @unique
+  created_at String
+  updated_at String
 }
 
 model StoreHouse {
-  id      Int    @id @default(autoincrement())
-  user    User   @relation(fields: [user_id], references: [id])
-  user_id BigInt
-  name    String @unique
+  id         Int    @id @default(autoincrement())
+  user       User   @relation(fields: [user_id], references: [id])
+  user_id    Int
+  name       String @unique
+  created_at String
+  updated_at String
 }
 
 model TypePrice {
-  id      Int    @id @default(autoincrement())
-  user    User   @relation(fields: [user_id], references: [id])
-  user_id BigInt
-  name    String @unique
+  id         Int    @id @default(autoincrement())
+  user       User   @relation(fields: [user_id], references: [id])
+  user_id    Int
+  name       String @unique
+  created_at String
+  updated_at String
 
   @@map("type_price")
 }
 
 model Unit {
-  id       Int       @id @default(autoincrement())
-  user     User      @relation(fields: [user_id], references: [id])
-  user_id  BigInt
-  name     String    @unique
-  products Product[]
+  id         Int       @id @default(autoincrement())
+  user       User      @relation(fields: [user_id], references: [id])
+  user_id    Int
+  name       String    @unique
+  created_at String
+  updated_at String
+  products   Product[]
 }
 
 //Cash and accounts
@@ -123,6 +139,8 @@ model CashAccountBalance {
   currency    Currency @relation(fields: [currency_id], references: [id])
   currency_id Int
   balance     Decimal  @db.Decimal(9, 2)
+  created_at  String
+  updated_at  String
 
   @@map("cash_account_balance")
 }
@@ -130,7 +148,7 @@ model CashAccountBalance {
 model CashAccount {
   id                Int           @id @default(autoincrement())
   user              User          @relation(fields: [user_id], references: [id])
-  user_id           BigInt
+  user_id           Int
   name              String?
   user_currency_id  Int
   bank_detail       BankDetail?   @relation(fields: [bank_detail_id], references: [id])
@@ -142,6 +160,9 @@ model CashAccount {
   stream            Json?
   from_moving_money MovingMoney[] @relation("FromCashAccount")
   to_moving_money   MovingMoney[] @relation("ToCashAccount")
+  created_at        String
+  updated_at        String
+  deleted_at        String?
 
   CurrencyExchange CurrencyExchange[]
   Employee         Employee[]
@@ -149,22 +170,25 @@ model CashAccount {
 }
 
 model Client {
-  id       Int     @id @default(autoincrement())
-  user     User    @relation(fields: [user_id], references: [id])
-  user_id  BigInt
-  name     String?
-  mobile   String?
-  company  String?
-  mail     String?
-  group_id Int?
-  address  String?
-  note     String? @db.Text
+  id         Int     @id @default(autoincrement())
+  user       User    @relation(fields: [user_id], references: [id])
+  user_id    Int
+  name       String?
+  mobile     String?
+  company    String?
+  mail       String?
+  group_id   Int?
+  address    String?
+  note       String? @db.Text
+  created_at String
+  updated_at String
+  deleted_at String?
 }
 
 model CurrencyExchange {
   id               Int         @id @default(autoincrement())
   user             User        @relation(fields: [user_id], references: [id])
-  user_id          BigInt
+  user_id          Int
   from_currency    Currency    @relation("FromExhangeCurrency", fields: [from_currency_id], references: [id])
   from_currency_id Int
   to_currency      Currency    @relation("ToExhangeCurrency", fields: [to_currency_id], references: [id])
@@ -175,6 +199,9 @@ model CurrencyExchange {
   amount_pay       Decimal     @db.Decimal(15, 2)
   amount_receive   Decimal     @db.Decimal(15, 2)
   note             String?     @db.Text
+  created_at       String
+  updated_at       String
+  deleted_at       String?
 
   @@map("currency_exchange")
 }
@@ -182,21 +209,24 @@ model CurrencyExchange {
 model MovingMoney {
   id                   Int         @id @default(autoincrement())
   user                 User        @relation(fields: [user_id], references: [id])
-  user_id              BigInt
+  user_id              Int
   from_cash_account    CashAccount @relation("FromCashAccount", fields: [from_cash_account_id], references: [id])
   from_cash_account_id Int
   to_cash_account      CashAccount @relation("ToCashAccount", fields: [to_cash_account_id], references: [id])
   to_cash_account_id   Int
   amount               Decimal     @db.Decimal(15, 2)
   note                 String?     @db.Text
+  created_at           String
+  updated_at           String
+  deleted_at           String?
 
   @@map("moving_money")
 }
 
 model Employee {
-  id             BigInt       @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   user           User         @relation(fields: [user_id], references: [id])
-  user_id        BigInt
+  user_id        Int
   f_name         String?
   s_name         String?
   mobile         String?
@@ -209,12 +239,15 @@ model Employee {
   supplier       Int          @default(0) @db.TinyInt
   cash_account   Int          @default(0) @db.TinyInt
   order_supplier String?      @db.Text
+  created_at     String
+  updated_at     String
+  deleted_at     String?
 }
 
 model LegalEntity {
   id         Int     @id @default(autoincrement())
   user       User    @relation(fields: [user_id], references: [id])
-  user_id    BigInt
+  user_id    Int
   name       String
   mail       String?
   site       String?
@@ -226,6 +259,9 @@ model LegalEntity {
   low_system String?
   director   String?
   nds        String?
+  created_at String
+  updated_at String
+  deleted_at String?
 
   @@map("legal_entity")
 }
@@ -233,7 +269,7 @@ model LegalEntity {
 model Pay {
   id              Int       @id @default(autoincrement())
   user            User      @relation(fields: [user_id], references: [id])
-  user_id         BigInt
+  user_id         Int
   number          Int
   type_id         Int
   type            String
@@ -242,46 +278,57 @@ model Pay {
   legal_entity_id Int?
   note            String?   @db.Text
   payments        PayType[] @relation("Payments")
+  created_at      String
+  updated_at      String
+  deleted_at      String?
 }
 
 model PayType {
   id          Int     @id @default(autoincrement())
   user        User    @relation(fields: [user_id], references: [id])
-  user_id     BigInt
+  user_id     Int
   pay         Pay     @relation("Payments", fields: [pay_id], references: [id])
   pay_id      Int
   currency_id Int
   amount      Decimal @db.Decimal(15, 2)
   type_pay    String
   type_amount String
+  created_at  String
+  updated_at  String
 
   @@map("pay_type")
 }
 
 model Supplier {
-  id       Int     @id @default(autoincrement())
-  user     User    @relation(fields: [user_id], references: [id])
-  user_id  BigInt
-  name     String
-  mail     String?
-  mobile   String?
-  company  String?
-  edrpou   String?
-  address  String?
-  code_nds String?
-  nds      String?
-  note     String? @db.Text
+  id         Int     @id @default(autoincrement())
+  user       User    @relation(fields: [user_id], references: [id])
+  user_id    Int
+  name       String
+  mail       String?
+  mobile     String?
+  company    String?
+  edrpou     String?
+  address    String?
+  code_nds   String?
+  nds        String?
+  note       String? @db.Text
+  created_at String
+  updated_at String
+  deleted_at String?
 }
 
 model UserCurrency {
   id               Int      @id @default(autoincrement())
   user             User     @relation(fields: [user_id], references: [id])
-  user_id          BigInt
+  user_id          Int
   from_currency    Currency @relation("FromUserCurrency", fields: [from_currency_id], references: [id])
   from_currency_id Int
   to_currency      Currency @relation("ToUserCurrency", fields: [to_currency_id], references: [id])
   to_currency_id   Int
   exchange_rate    Decimal  @db.Decimal(15, 2)
+  created_at       String
+  updated_at       String
+  deleted_at       String?
 
   @@map("user_currency")
 }
@@ -290,17 +337,17 @@ model UserCurrency {
 model ProductGroup {
   id         Int       @id @default(autoincrement())
   name       String    @unique
-  created_at BigInt
-  updated_at BigInt
+  created_at String
+  updated_at String
   products   Product[]
 
   @@map("product_group")
 }
 
 model Product {
-  id          BigInt              @id @default(autoincrement())
+  id          Int                 @id @default(autoincrement())
   user        User                @relation(fields: [user_id], references: [id])
-  user_id     BigInt
+  user_id     Int
   is_model    Boolean             @default(false)
   parent_id   Int?
   name        String
@@ -313,22 +360,22 @@ model Product {
   supplier_id Int
   min_stock   Int                 @default(0)
   note        String              @db.Text
-  created_at  BigInt
-  updated_at  BigInt
-  deleted_at  BigInt?
+  created_at  String
+  updated_at  String
+  deleted_at  String?
   amount_data ProductAmountData[]
 }
 
 model ProductAmountData {
-  id          BigInt  @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   product     Product @relation(fields: [product_id], references: [id])
-  product_id  BigInt
+  product_id  Int
   type        String
   name        String
   amount      Decimal @db.Decimal(9, 2)
-  currency_id Int
-  created_at  BigInt
-  updated_at  BigInt
+  currency_id String
+  created_at  String
+  updated_at  String
 
   @@map("product_amount_data")
 }
