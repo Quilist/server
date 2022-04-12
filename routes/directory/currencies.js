@@ -2,12 +2,11 @@ const express = require("express");
 const router = express.Router();
 
 const prisma = require("../../database/database");
-const utils = require("../../controllers/utils");
 const itemsController = require("../../controllers/items/items-controller");
 const itemsService = require("../../controllers/items/items-service");
 
 // получение всех currencies пользователя
-router.get("/", utils.isTokenValid, async (req, res) => {
+router.get("/", async (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 25;
 
@@ -17,14 +16,14 @@ router.get("/", utils.isTokenValid, async (req, res) => {
 });
 
 // получение all_currencies
-router.get("/auxiliary", utils.isTokenValid, async (req, res) => {
+router.get("/auxiliary", async (req, res) => {
     prisma.currencies.findMany()
         .then((res) => res.json({ status: "OK", message: res }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // добавление currencies
-router.post("/add", utils.isTokenValid, async (req, res) => {
+router.post("/add", async (req, res) => {
     const { id_from_currencies, id_to_currencies } = req.body;
 
     if (id_from_currencies === id_to_currencies) {
@@ -49,13 +48,13 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
 });
 
 // получение currencies по айди
-router.get("/:id", utils.isTokenValid, itemsController.id);
+router.get("/:id", itemsController.id);
 
 // редактирование currencies
-router.post("/:id/edit", utils.isTokenValid, itemsController.edit);
+router.post("/:id/edit", itemsController.edit);
 
 // Удаление currencies
-router.post("/:id/remove", utils.isTokenValid, itemsController.delete);
+router.post("/:id/remove", itemsController.delete);
 
 module.exports = router;
 

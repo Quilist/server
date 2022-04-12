@@ -2,14 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 const prisma = require("../../database/database");
-const utils = require("../../controllers/utils");
 const itemsController = require("../../controllers/items/items-controller");
 
 // получение всех Employees пользователя
-router.get("/", utils.isTokenValid, itemsController.all);
+router.get("/", itemsController.all);
 
 // добавление Employee
-router.post("/add", utils.isTokenValid, async (req, res) => {
+router.post("/add", async (req, res) => {
     const { f_name, s_name, mobile, add_order_supplier } = req.body;
 
     if (!f_name?.length < 3 || s_name?.length < 3 || mobile?.length !== 10) {
@@ -27,7 +26,7 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
 });
 
 // получение Employee по айди
-router.get("/:id", utils.isTokenValid, (req, res) => {
+router.get("/:id", (req, res) => {
     // отправка запроса
     prisma.employees.findUnique({ where: { id: req.params.id } })
         .then((result) => {
@@ -45,7 +44,7 @@ router.get("/:id", utils.isTokenValid, (req, res) => {
 });
 
 // редактирование Employee
-router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
+router.post("/:id/edit", async (req, res) => {
     const { f_name, s_name, mobile, add_order_supplier } = req.body;
 
     if (!f_name?.length < 3 || s_name?.length < 3 || mobile?.length !== 10) {
@@ -63,7 +62,7 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
 });
 
 // Удаление Employee
-router.post("/:id/remove", utils.isTokenValid, itemsController.delete);
+router.post("/:id/remove", itemsController.delete);
 
 module.exports = router;
 

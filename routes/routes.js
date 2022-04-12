@@ -40,6 +40,8 @@ router.use("/auth", authRouter);
 router.use("/auth/google", googleAuthRouter);
 router.use("/auth/facebook", facebookAuthRouter);
 
+router.use(utils.isTokenValid);
+
 router.use("/clients", clientsRouter);
 router.use("/pay", payRouter);
 

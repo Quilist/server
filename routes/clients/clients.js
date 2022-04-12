@@ -2,10 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const prisma = require("../../database/database");
-const utils = require("../../controllers/utils");
 
 // получение всех клиентов пользователя
-router.get("/", utils.isTokenValid, (req, res) => {
+router.get("/", (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 25;
 
@@ -33,7 +32,7 @@ router.get("/", utils.isTokenValid, (req, res) => {
 });
 
 // добавление клиента
-router.post("/add", utils.isTokenValid, (req, res) => {
+router.post("/add", (req, res) => {
     const { name, mobile, mail } = req.body;
 
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
@@ -56,7 +55,7 @@ router.post("/add", utils.isTokenValid, (req, res) => {
 });
 
 // получение клиента по айди
-router.get("/:id", utils.isTokenValid, (req, res) => {
+router.get("/:id", (req, res) => {
     // отправка запроса
     prisma.clients.findUnique({ where: { id: req.params.id } })
         .then((result) => {
@@ -76,7 +75,7 @@ router.get("/:id", utils.isTokenValid, (req, res) => {
 });
 
 // редактирование клиента
-router.post("/:id/edit", utils.isTokenValid, (req, res) => {
+router.post("/:id/edit", (req, res) => {
     const { name, mobile, mail } = req.body;
 
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
@@ -99,7 +98,7 @@ router.post("/:id/edit", utils.isTokenValid, (req, res) => {
 });
 
 // Удаление клиента
-router.post("/:id/remove", utils.isTokenValid, (req, res) => {
+router.post("/:id/remove", (req, res) => {
     prisma.clients.delete({ where: { id: req.params.id } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));

@@ -2,14 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 const prisma = require("../../database/database");
-const utils = require("../../controllers/utils");
 const itemsController = require("../../controllers/items/items-controller");
 
 // получение всех suppliers пользователя
-router.get("/", utils.isTokenValid, itemsController.all);
+router.get("/", itemsController.all);
 
 // добавление supplier
-router.post("/add", utils.isTokenValid, async (req, res) => {
+router.post("/add", async (req, res) => {
     let { name, mobile, company, edrpou, nds, code_nds } = req.body;
 
     if (name?.length < 3 || mobile?.length !== 10) {
@@ -36,10 +35,10 @@ router.post("/add", utils.isTokenValid, async (req, res) => {
 });
 
 // получение supplier по айди
-router.get("/:id", utils.isTokenValid, itemsController.id);
+router.get("/:id", itemsController.id);
 
 // редактирование supplier
-router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
+router.post("/:id/edit", async (req, res) => {
     let { name, mobile, company, edrpou, nds, code_nds } = req.body;
 
     if (name?.length < 3 || mobile?.length !== 10) {
@@ -66,6 +65,6 @@ router.post("/:id/edit", utils.isTokenValid, async (req, res) => {
 });
 
 // Удаление supplier
-router.post("/:id/remove", utils.isTokenValid, itemsController.delete);
+router.post("/:id/remove", itemsController.delete);
 
 module.exports = router;
