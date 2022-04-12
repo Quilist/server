@@ -26,7 +26,7 @@ class authController {
 
             const data = await authService.login(email, password, req.ip);
 
-            res.cookie("token", data, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true, domain: "b-fin.tech" });
+            res.cookie("token", data, { httpOnly: false, domain: "b-fin.tech" });
             return res.redirect(`${config.SiteLink}/dashboard`);
         } catch (e) {
             next(e);
@@ -45,7 +45,7 @@ class authController {
         try {
             const data = await authService.activation(req.query.code, req.ip);
 
-            res.cookie("token", data, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true, domain: "b-fin.tech" })
+            res.cookie("token", data, { httpOnly: false, domain: "b-fin.tech" })
             return res.redirect(`${config.SiteLink}/dashboard`);
         } catch (e) {
             next(e);
