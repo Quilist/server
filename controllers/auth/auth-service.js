@@ -22,7 +22,7 @@ class UserService {
             subject: "B-fin account activation code."
         })({ text: `https://${config.ServerDomain}/auth/activation?code=${code}` }, (err, result, fullResult) => {
             if (err) throw apiError.badRequest(err.message);
-        
+
             return result;
         });
     }
@@ -31,6 +31,8 @@ class UserService {
         if (!email || !password) throw apiError.badRequest("Nav.Authn, ValidationError");
 
         const data = await prisma.user.findMany({ where: { e_mail: email } })
+
+        console.log(data)
 
         if (data[0]?.pass !== utils.stringHash(password)) {
             throw apiError.badRequest("Nav.Authn, LoginError");
@@ -59,7 +61,7 @@ class UserService {
 
         const dateMs = Date.now();
 
-        const data = await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: BigInt(dateMs), updated_at: BigInt(dateMs) } });
+        const data = await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: dateMs, updated_at: dateMs } });
 
         return utils.authToken(email, ip, data.id)
     }
