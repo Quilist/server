@@ -1,5 +1,5 @@
 const authService = require("./auth-service");
-const { checkPass } = require('check-password-strength');
+const { passwordStrength } = require('check-password-strength');
 
 class authController {
     // регистрация
@@ -7,7 +7,7 @@ class authController {
         try {
             const { username, email, password } = req.body;
 
-            if (checkPass(password).value !== "Strong" && email?.indexOf("@") === -1) {
+            if (passwordStrength(password).value !== "Strong" && email?.indexOf("@") === -1) {
                 return res.json({ status: "error", message: "Nav.Registration, ValidationError" });
             }
 
@@ -65,7 +65,7 @@ class authController {
         try {
             const { password, code } = req.body;
 
-            if (checkPass(password).value !== "Strong") {
+            if (passwordStrength(password).value !== "Strong") {
                 return res.json({ status: "error", message: "Nav.Registration, ValidationError" });
             }
 
