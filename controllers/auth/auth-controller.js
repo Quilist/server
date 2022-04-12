@@ -1,4 +1,5 @@
 const authService = require("./auth-service");
+const config = require("../../config.json");
 const { passwordStrength } = require('check-password-strength');
 
 class authController {
