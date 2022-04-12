@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -16,6 +16,7 @@ model User {
   e_mail           String             @unique
   phone            String?
   username         String?
+  pass             String?
   status           Int                @default(1)
   role             Int                @default(1)
   google           String?
@@ -230,8 +231,8 @@ model LegalEntity {
 }
 
 model Pay {
-  id              Int     @id @default(autoincrement())
-  user            User    @relation(fields: [user_id], references: [id])
+  id              Int       @id @default(autoincrement())
+  user            User      @relation(fields: [user_id], references: [id])
   user_id         BigInt
   number          Int
   type_id         Int
@@ -239,7 +240,7 @@ model Pay {
   type_order      String
   cash_account_id String
   legal_entity_id Int?
-  note            String? @db.Text
+  note            String?   @db.Text
   payments        PayType[] @relation("Payments")
 }
 

@@ -27,7 +27,7 @@ class UserService {
         });
     }
 
-    async login(email, password) {
+    async login(email, password, ip) {
         if (!email || !password) throw apiError.badRequest("Nav.Authn, ValidationError");
 
         const data = await prisma.user.findMany({ where: { e_mail: email } })
@@ -36,10 +36,10 @@ class UserService {
             throw apiError.badRequest("Nav.Authn, LoginError");
         }
 
-        return utils.authToken(email, req.ip, data[0].id);
+        return utils.authToken(email, ip, data[0].id);
     }
 
-    async activation(code) {
+    async activation(code, ip) {
         // Проверка на наличие кода
         if (!code) throw apiError.badRequest("Nav.Profile, ConfirmError");
 
@@ -57,9 +57,9 @@ class UserService {
 
         if (array.length) throw apiError.badRequest("Nav.Registration, EmailRegistered");
 
-        await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: Date.now(), updated_at: Date.now() } });
+        const data = await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: Date.now(), updated_at: Date.now() } });
 
-        return utils.authToken(email, req.ip, res.id)
+        return utils.authToken(email, ip, data.id)
     }
 
     async restoration(email) {

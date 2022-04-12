@@ -23,7 +23,7 @@ class authController {
         try {
             const { email, password } = req.body;
 
-            const data = await authService.login(email, password);
+            const data = await authService.login(email, password, req.ip);
 
             res.cookie("token", data, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true, domain: "b-fin.tech" });
             return res.redirect(`${config.SiteLink}/dashboard`);
@@ -42,7 +42,7 @@ class authController {
          * Ссылка действует час.
          */
         try {
-            const data = await authService.activation(req.query.code);
+            const data = await authService.activation(req.query.code, req.ip);
 
             res.cookie("token", data, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true, domain: "b-fin.tech" })
             return res.redirect(`${config.SiteLink}/dashboard`);
