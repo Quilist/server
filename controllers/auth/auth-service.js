@@ -57,7 +57,7 @@ class UserService {
 
         if (array.length) throw apiError.badRequest("Nav.Registration, EmailRegistered");
 
-        const data = await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: Date.now(), updated_at: Date.now() } });
+        const data = await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: String(Date.now()), updated_at: String(Date.now()) } });
 
         return utils.authToken(email, ip, data.id)
     }
