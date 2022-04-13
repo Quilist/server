@@ -37,17 +37,14 @@ router.post("/add", (req, res) => {
 
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
 
-    mobile = "";
-    for (const index in mobile) {
-        if (mobile[index].length !== 10) {
+    mobile.every(elem => {
+        if (elem.length !== 10) {
             return res.json({ status: "error", message: "incorrect phone" });
         }
-        mobiles += mobile[index] + ";"
-    }
+    });
 
-    mail = "";
-    for (const index in mail) mails += mail[index] + ";"
-
+    mobile = JSON.stringify(mobile);
+    mail = JSON.stringify(mail);
     // отправка запроса
     prisma.client.create({ data: { id_user: req.token.id, ...req.body } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
@@ -66,8 +63,8 @@ router.get("/:id", (req, res) => {
                 return res.json({ status: "error", message: "Action not allowed" });
             }
 
-            result.mobile = result?.mobile.split(";")
-            result.mail = result?.mail.split(";")
+            result.mobile = JSON.parse(mobile);
+            result.mail = JSON.parse(mobile);
 
             res.json({ status: "OK", message: result });
         })
