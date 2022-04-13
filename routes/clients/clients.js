@@ -38,6 +38,7 @@ router.post("/add", (req, res) => {
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
 
     mobile.every(elem => {
+        console.log(elem.length)
         if (elem.length !== 10) {
             console.log(elem)
             return res.json({ status: "error", message: "incorrect phone" });
@@ -47,9 +48,15 @@ router.post("/add", (req, res) => {
     req.body.mobile = JSON.stringify(mobile);
     req.body.mail = JSON.stringify(mail);
 
-    console.log(req.body)
+    const dateMs = String(Date.now());
+
+    const options = {
+        ...req.body,
+        created_at: dateMs,
+        updated_at: dateMs
+    }
     // отправка запроса
-    prisma.client.create({ data: { id_user: req.token.id, ...req.body } })
+    prisma.client.create({ data: { id_user: req.token.id, ...options } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
