@@ -37,13 +37,11 @@ router.post("/add", (req, res) => {
 
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
 
-    mobile.every(elem => {
-        console.log(elem.length)
-        if (elem.length !== 10) {
-            console.log(elem)
+    for (let i = 0; i < mobile.length; i++) {
+        if (mobile[i].length !== 10) {
             return res.json({ status: "error", message: "incorrect phone" });
         }
-    });
+    }
 
     req.body.mobile = JSON.stringify(mobile);
     req.body.mail = JSON.stringify(mail);
