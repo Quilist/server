@@ -57,10 +57,7 @@ router.post("/add", (req, res) => {
     // отправка запроса
     prisma.client.create({ data: { id_user: req.token.id, ...options } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
-        .catch(err => {
-            console.log(err.message)
-            res.json({ status: "error", message: err.message })
-        });
+        .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // получение клиента по айди
@@ -106,14 +103,14 @@ router.post("/:id/edit", (req, res) => {
     }
 
     // отправка запроса
-    prisma.client.update({ data: { ...options }, where: { id: req.params.id } })
+    prisma.client.update({ data: { ...options }, where: { id: Number(req.params.id) } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // Удаление клиента
 router.post("/:id/remove", (req, res) => {
-    prisma.client.delete({ where: { id: req.params.id } })
+    prisma.client.delete({ where: { id: Number(req.params.id) } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
