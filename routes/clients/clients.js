@@ -33,11 +33,11 @@ router.get("/", (req, res) => {
 
 // добавление клиента
 router.post("/add", (req, res) => {
-    const { name, mobile, mail } = req.body;
+    let { name, mobile, mail } = req.body;
 
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
 
-    let mobiles = "";
+    mobile = "";
     for (const index in mobile) {
         if (mobile[index].length !== 10) {
             return res.json({ status: "error", message: "incorrect phone" });
@@ -45,7 +45,7 @@ router.post("/add", (req, res) => {
         mobiles += mobile[index] + ";"
     }
 
-    let mails = "";
+    mail = "";
     for (const index in mail) mails += mail[index] + ";"
 
     // отправка запроса
