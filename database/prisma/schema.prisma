@@ -62,8 +62,8 @@ model Currency {
 
 model BankDetail {
   id               Int           @id @default(autoincrement())
-  user             User          @relation(fields: [user_id], references: [id])
-  user_id          Int
+  user             User          @relation(fields: [id_user], references: [id])
+  id_user          Int
   bank_name        String        @unique
   MFO              String?
   checking_account String?
@@ -76,8 +76,8 @@ model BankDetail {
 
 model Expenditure {
   id         Int    @id @default(autoincrement())
-  user       User   @relation(fields: [user_id], references: [id])
-  user_id    Int
+  user       User   @relation(fields: [id_user], references: [id])
+  id_user    Int
   name       String @unique
   created_at String
   updated_at String
@@ -85,8 +85,8 @@ model Expenditure {
 
 model IncomeItem {
   id         Int    @id @default(autoincrement())
-  user       User   @relation(fields: [user_id], references: [id])
-  user_id    Int
+  user       User   @relation(fields: [id_user], references: [id])
+  id_user    Int
   name       String @unique
   created_at String
   updated_at String
@@ -96,8 +96,8 @@ model IncomeItem {
 
 model Measure {
   id         Int    @id @default(autoincrement())
-  user       User   @relation(fields: [user_id], references: [id])
-  user_id    Int
+  user       User   @relation(fields: [id_user], references: [id])
+  id_user    Int
   name       String @unique
   created_at String
   updated_at String
@@ -105,8 +105,8 @@ model Measure {
 
 model StoreHouse {
   id         Int    @id @default(autoincrement())
-  user       User   @relation(fields: [user_id], references: [id])
-  user_id    Int
+  user       User   @relation(fields: [id_user], references: [id])
+  id_user    Int
   name       String @unique
   created_at String
   updated_at String
@@ -114,8 +114,8 @@ model StoreHouse {
 
 model TypePrice {
   id         Int    @id @default(autoincrement())
-  user       User   @relation(fields: [user_id], references: [id])
-  user_id    Int
+  user       User   @relation(fields: [id_user], references: [id])
+  id_user    Int
   name       String @unique
   created_at String
   updated_at String
@@ -125,8 +125,8 @@ model TypePrice {
 
 model Unit {
   id         Int       @id @default(autoincrement())
-  user       User      @relation(fields: [user_id], references: [id])
-  user_id    Int
+  user       User      @relation(fields: [id_user], references: [id])
+  id_user    Int
   name       String    @unique
   created_at String
   updated_at String
@@ -147,8 +147,8 @@ model CashAccountBalance {
 
 model CashAccount {
   id                Int           @id @default(autoincrement())
-  user              User          @relation(fields: [user_id], references: [id])
-  user_id           Int
+  user              User          @relation(fields: [id_user], references: [id])
+  id_user           Int
   name              String?
   user_currency_id  Int
   bank_detail       BankDetail?   @relation(fields: [bank_detail_id], references: [id])
@@ -171,8 +171,8 @@ model CashAccount {
 
 model Client {
   id         Int     @id @default(autoincrement())
-  user       User    @relation(fields: [user_id], references: [id])
-  user_id    Int
+  user       User    @relation(fields: [id_user], references: [id])
+  id_user    Int
   name       String?
   mobile     String?
   company    String?
@@ -190,8 +190,8 @@ model Client {
 
 model CurrencyExchange {
   id               Int         @id @default(autoincrement())
-  user             User        @relation(fields: [user_id], references: [id])
-  user_id          Int
+  user             User        @relation(fields: [id_user], references: [id])
+  id_user          Int
   from_currency    Currency    @relation("FromExhangeCurrency", fields: [from_currency_id], references: [id])
   from_currency_id Int
   to_currency      Currency    @relation("ToExhangeCurrency", fields: [to_currency_id], references: [id])
@@ -211,8 +211,8 @@ model CurrencyExchange {
 
 model MovingMoney {
   id                   Int         @id @default(autoincrement())
-  user                 User        @relation(fields: [user_id], references: [id])
-  user_id              Int
+  user                 User        @relation(fields: [id_user], references: [id])
+  id_user              Int
   from_cash_account    CashAccount @relation("FromCashAccount", fields: [from_cash_account_id], references: [id])
   from_cash_account_id Int
   to_cash_account      CashAccount @relation("ToCashAccount", fields: [to_cash_account_id], references: [id])
@@ -228,8 +228,8 @@ model MovingMoney {
 
 model Employee {
   id             Int          @id @default(autoincrement())
-  user           User         @relation(fields: [user_id], references: [id])
-  user_id        Int
+  user           User         @relation(fields: [id_user], references: [id])
+  id_user        Int
   f_name         String?
   s_name         String?
   mobile         String?
@@ -249,8 +249,8 @@ model Employee {
 
 model LegalEntity {
   id         Int     @id @default(autoincrement())
-  user       User    @relation(fields: [user_id], references: [id])
-  user_id    Int
+  user       User    @relation(fields: [id_user], references: [id])
+  id_user    Int
   name       String
   mail       String?
   site       String?
@@ -271,8 +271,8 @@ model LegalEntity {
 
 model Pay {
   id              Int       @id @default(autoincrement())
-  user            User      @relation(fields: [user_id], references: [id])
-  user_id         Int
+  user            User      @relation(fields: [id_user], references: [id])
+  id_user         Int
   number          Int
   type_id         Int
   type            String
@@ -288,8 +288,8 @@ model Pay {
 
 model PayType {
   id          Int     @id @default(autoincrement())
-  user        User    @relation(fields: [user_id], references: [id])
-  user_id     Int
+  user        User    @relation(fields: [id_user], references: [id])
+  id_user     Int
   pay         Pay     @relation("Payments", fields: [pay_id], references: [id])
   pay_id      Int
   currency_id Int
@@ -304,8 +304,8 @@ model PayType {
 
 model Supplier {
   id         Int     @id @default(autoincrement())
-  user       User    @relation(fields: [user_id], references: [id])
-  user_id    Int
+  user       User    @relation(fields: [id_user], references: [id])
+  id_user    Int
   name       String
   mail       String?
   mobile     String?
@@ -322,8 +322,8 @@ model Supplier {
 
 model UserCurrency {
   id               Int      @id @default(autoincrement())
-  user             User     @relation(fields: [user_id], references: [id])
-  user_id          Int
+  user             User     @relation(fields: [id_user], references: [id])
+  id_user          Int
   from_currency    Currency @relation("FromUserCurrency", fields: [from_currency_id], references: [id])
   from_currency_id Int
   to_currency      Currency @relation("ToUserCurrency", fields: [to_currency_id], references: [id])
@@ -349,8 +349,8 @@ model ProductGroup {
 
 model Product {
   id          Int                 @id @default(autoincrement())
-  user        User                @relation(fields: [user_id], references: [id])
-  user_id     Int
+  user        User                @relation(fields: [id_user], references: [id])
+  id_user     Int
   is_model    Boolean             @default(false)
   parent_id   Int?
   name        String
