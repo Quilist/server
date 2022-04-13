@@ -44,8 +44,8 @@ router.post("/add", (req, res) => {
         }
     });
 
-    mobile = JSON.stringify(mobile);
-    mail = JSON.stringify(mail);
+    req.body.mobile = JSON.stringify(mobile);
+    req.body.mail = JSON.stringify(mail);
 
     console.log(req.body)
     // отправка запроса
