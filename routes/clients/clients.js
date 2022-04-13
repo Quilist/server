@@ -53,6 +53,8 @@ router.post("/add", (req, res) => {
         created_at: dateMs,
         updated_at: dateMs
     }
+
+    console.log(req.token)
     // отправка запроса
     prisma.client.create({ data: { id_user: req.token.id, ...options } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
