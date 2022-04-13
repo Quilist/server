@@ -179,7 +179,10 @@ model Client {
   mail       String?
   group_id   Int?
   address    String?
-  note       String? @db.Text
+  discount   String?
+  duty       String?
+  group      String?
+  notes      String? @db.Text
   created_at String
   updated_at String
   deleted_at String?
