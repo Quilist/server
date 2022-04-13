@@ -8,7 +8,7 @@ router.get("/", (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 25;
 
-    prisma.clients.findMany({ skip: limit * (page - 1), take: limit })
+    prisma.client.findMany({ skip: limit * (page - 1), take: limit })
         .then(async result => {
 
             for (const index in result) {
@@ -16,7 +16,7 @@ router.get("/", (req, res) => {
                 result[index].mail = result[index]?.mail.split(";")
             }
 
-            const total = await prisma.clients.count();
+            const total = await prisma.client.count();
 
             res.json({
                 status: "OK", message: {
@@ -49,7 +49,7 @@ router.post("/add", (req, res) => {
     for (const index in mail) mails += mail[index] + ";"
 
     // отправка запроса
-    prisma.clients.create({ data: { id_user: req.token.id, ...req.body } })
+    prisma.client.create({ data: { id_user: req.token.id, ...req.body } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
@@ -57,7 +57,7 @@ router.post("/add", (req, res) => {
 // получение клиента по айди
 router.get("/:id", (req, res) => {
     // отправка запроса
-    prisma.clients.findUnique({ where: { id: req.params.id } })
+    prisma.client.findUnique({ where: { id: req.params.id } })
         .then((result) => {
             if (!result) return res.json({ status: "error", message: "Unknow id" });
 
@@ -92,14 +92,14 @@ router.post("/:id/edit", (req, res) => {
     for (const index in mail) mails += mail[index] + ";";
 
     // отправка запроса
-    prisma.clients.update({ data: { ...req.body }, where: { id: req.params.id } })
+    prisma.client.update({ data: { ...req.body }, where: { id: req.params.id } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // Удаление клиента
 router.post("/:id/remove", (req, res) => {
-    prisma.clients.delete({ where: { id: req.params.id } })
+    prisma.client.delete({ where: { id: req.params.id } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
