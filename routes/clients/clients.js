@@ -9,11 +9,11 @@ router.get("/", (req, res) => {
     const limit = Number(req.query.limit) || 25;
 
     prisma.client.findMany({ skip: limit * (page - 1), take: limit })
-        .then(async result => {
+        .then(async (result) => {
 
             for (const index in result) {
-                result[index].mobile = result[index]?.mobile.split(";")
-                result[index].mail = result[index]?.mail.split(";")
+                result[index].mobile = JSON.parse(result[index]?.mobile)
+                result[index].mail = JSON.parse(result[index]?.mail)
             }
 
             const total = await prisma.client.count();
@@ -59,7 +59,8 @@ router.post("/add", (req, res) => {
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => {
             console.log(err.message)
-            res.json({ status: "error", message: err.message })});
+            res.json({ status: "error", message: err.message })
+        });
 });
 
 // получение клиента по айди
@@ -88,19 +89,24 @@ router.post("/:id/edit", (req, res) => {
 
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
 
-    let mobiles = "";
-    for (const index in mobile) {
-        if (mobile[index].length !== 10) {
+    for (let i = 0; i < mobile.length; i++) {
+        if (mobile[i].length !== 10) {
             return res.json({ status: "error", message: "incorrect phone" });
         }
-        mobiles += mobile[index] + ";"
     }
 
-    let mails = "";
-    for (const index in mail) mails += mail[index] + ";";
+    req.body.mobile = JSON.stringify(mobile);
+    req.body.mail = JSON.stringify(mail);
+
+    const dateMs = String(Date.now());
+
+    const options = {
+        ...req.body,
+        updated_at: dateMs
+    }
 
     // отправка запроса
-    prisma.client.update({ data: { ...req.body }, where: { id: req.params.id } })
+    prisma.client.update({ data: { ...options }, where: { id: req.params.id } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
