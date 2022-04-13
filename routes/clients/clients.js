@@ -54,11 +54,12 @@ router.post("/add", (req, res) => {
         updated_at: dateMs
     }
 
-    console.log(req.token)
     // отправка запроса
     prisma.client.create({ data: { id_user: req.token.id, ...options } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
-        .catch(err => res.json({ status: "error", message: err.message }));
+        .catch(err => {
+            console.log(err.message)
+            res.json({ status: "error", message: err.message })});
 });
 
 // получение клиента по айди
