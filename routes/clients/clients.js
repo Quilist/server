@@ -39,12 +39,15 @@ router.post("/add", (req, res) => {
 
     mobile.every(elem => {
         if (elem.length !== 10) {
+            console.log(elem)
             return res.json({ status: "error", message: "incorrect phone" });
         }
     });
 
     mobile = JSON.stringify(mobile);
     mail = JSON.stringify(mail);
+
+    console.log(req.body)
     // отправка запроса
     prisma.client.create({ data: { id_user: req.token.id, ...req.body } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
