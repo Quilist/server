@@ -75,8 +75,8 @@ router.get("/:id", (req, res) => {
                 return res.json({ status: "error", message: "Action not allowed" });
             }
 
-            result.mobile = JSON.parse(mobile);
-            result.mail = JSON.parse(mobile);
+            result.mobile = JSON.parse(result.mobile);
+            result.mail = JSON.parse(result.mail);
 
             res.json({ status: "OK", message: result });
         })
