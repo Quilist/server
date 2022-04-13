@@ -66,7 +66,7 @@ router.post("/add", (req, res) => {
 // получение клиента по айди
 router.get("/:id", (req, res) => {
     // отправка запроса
-    prisma.client.findUnique({ where: { id: req.params.id } })
+    prisma.client.findUnique({ where: { id: Number(req.params.id) } })
         .then((result) => {
             if (!result) return res.json({ status: "error", message: "Unknow id" });
 
