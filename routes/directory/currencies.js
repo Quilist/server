@@ -10,14 +10,14 @@ router.get("/", async (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 25;
 
-    itemsService.all(page, limit, "user_currencies")
+    itemsService.all(page, limit, "user_currency")
         .then((res) => res.json({ status: "OK", message: res }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // получение all_currencies
 router.get("/auxiliary", async (req, res) => {
-    prisma.currencies.findMany()
+    prisma.currency.findMany()
         .then((res) => res.json({ status: "OK", message: res }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });

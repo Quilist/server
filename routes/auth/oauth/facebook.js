@@ -34,7 +34,17 @@ const oAuthCallback = async (req, res) => {
 
             if (!result.length) {
 
-                prisma.user.create({ data: { e_mail: email, pass: password, facebook: req.user.raw } })
+                const dateMs = String(Date.now());
+
+                prisma.user.create({
+                    data: {
+                        e_mail: email,
+                        pass: password,
+                        facebook: req.user.raw,
+                        created_at: dateMs,
+                        updated_at: dateMs
+                    }
+                })
                     .then(res => {
                         const authToken = utils.authToken(email, req.ip, result.id);
 
@@ -45,7 +55,7 @@ const oAuthCallback = async (req, res) => {
             } else {
                 if (result[0].pass !== password) return res.json({ status: "error", message: "Nav.Authn, LoginError" });
 
-                if (!result[0].facebook) await prisma.user.update({ data: { facebook: req.user.raw }, where: { e_mail: email } });
+                if (!result[0].facebook) await prisma.user.update({ data: { facebook: req.user.raw, updated_at: String(Date.now()) }, where: { e_mail: email } });
 
                 const authToken = utils.authToken(email, req.ip, result[0].id);
 
