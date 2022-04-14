@@ -47,7 +47,7 @@ const oAuthCallback = async (req, res) => {
                     .then(res => {
                         const authToken = utils.authToken(email, req.ip, result.id);
 
-                        res.cookie("token", authToken, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, domain: "b-fin.tech" });
+                        res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
                         res.redirect(`${config.SiteLink}/dashboard`);;
                     })
                     .catch(err => res.json({ status: "error", message: err.message }));
@@ -58,7 +58,7 @@ const oAuthCallback = async (req, res) => {
 
                 const authToken = utils.authToken(email, req.ip, result[0].id);
 
-                res.cookie("token", authToken, { maxAge: 7 * 24 * 60 * 60 * 1000, httpOnly: true, domain: "b-fin.tech" });
+                res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
                 res.redirect(`${config.SiteLink}/dashboard`);
             }
         })
