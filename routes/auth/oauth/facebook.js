@@ -59,7 +59,7 @@ const oAuthCallback = async (req, res) => {
 
                 const authToken = utils.authToken(email, req.ip, result[0].id);
 
-                res.cookie("token", authToken, { httpOnly: true, domain: "b-fin.tech" });
+                res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
                 res.redirect(`${config.SiteLink}/dashboard`);
             }
         })
