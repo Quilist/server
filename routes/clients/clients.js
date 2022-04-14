@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const prisma = require("../../database/database");
+const itemsControllers = require("../../controllers/items/items-controller")
 
 // получение всех клиентов пользователя
 router.get("/", (req, res) => {
@@ -109,10 +110,6 @@ router.post("/:id/edit", (req, res) => {
 });
 
 // Удаление клиента
-router.post("/:id/remove", (req, res) => {
-    prisma.client.delete({ where: { id: Number(req.params.id) } })
-        .then(() => res.json({ status: "OK", message: "Succes" }))
-        .catch(err => res.json({ status: "error", message: err.message }));
-});
+router.post("/:id/remove", itemsControllers.delete);
 
 module.exports = router;

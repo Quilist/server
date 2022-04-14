@@ -14,6 +14,7 @@ const clientsRouter = require("./clients/clients");
 const payRouter = require("./pay/pay");
 
 const moneyRouter = require("./money/money");
+const productRouter = require("./product/product");
 /*
  * Роуты.
  *
@@ -52,5 +53,6 @@ fs.readdir('./routes/directory', (err, files) => {
 });
 
 router.use("/money", moneyRouter);
+router.use("/products", productRouter);
 
 module.exports = router;

@@ -14,7 +14,7 @@ class itemsController {
 
     async edit(req, res, next) {
         try {
-            await itemsService.edit(req.originalUrl.split("/")[1], { ...req.body }, req.params.id);
+            await itemsService.edit(req.originalUrl.split("/")[1], { ...req.body }, Number(req.params.id));
 
             return res.json({ status: "error", message: "Succes" });
         } catch (e) {
@@ -24,7 +24,7 @@ class itemsController {
 
     async delete(req, res, next) {
         try {
-            await itemsService.delete(req.originalUrl.split("/")[1], req.params.id)
+            await itemsService.delete(req.originalUrl.split("/")[1], Number(req.params.id))
         } catch (e) {
             next(e)
         }
@@ -45,7 +45,7 @@ class itemsController {
 
     async id(req, res, next) {
         try {
-            const data = await itemsService.id(req.originalUrl.split("/")[1], req.params.id, req.token)
+            const data = await itemsService.id(req.originalUrl.split("/")[1], Number(req.params.id), req.token)
 
             return res.json({ status: "OK", message: data });
         } catch (e) {

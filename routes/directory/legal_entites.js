@@ -31,7 +31,7 @@ router.post("/:id/edit", async (req, res) => {
         return res.json({ status: "error", message: "incorrect name or phone" })
     }
     // отправка запроса
-    prisma.legal_entites.update({ ...req.body }, { where: { id: req.params.id } })
+    prisma.legal_entites.update({ data: { ...req.body, updated_at: String(Date.now()) }, where: { id: Number(req.params.id) } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });

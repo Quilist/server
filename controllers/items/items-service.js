@@ -4,11 +4,26 @@ const apiError = require("../../exceptions/error");
 class itemsService {
 
     async add(table, object) {
-        return await prisma[table].create({ data: object });
+        const dateMs = String(Date.now());
+
+        const options = {
+            ...object,
+            created_at: dateMs,
+            updated_at: dateMs
+        }
+
+        return await prisma[table].create({ data: options });
     }
 
     async edit(table, data, id) {
-        return await prisma[table].update({ data: data, where: { id: id } });
+        const dateMs = String(Date.now());
+
+        const options = {
+            ...data,
+            updated_at: dateMs
+        }
+
+        return await prisma[table].update({ data: options, where: { id: id } });
     }
 
     async delete(table, id) {

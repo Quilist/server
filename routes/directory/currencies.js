@@ -40,7 +40,15 @@ router.post("/add", async (req, res) => {
 
             if (index !== -1) return res.json({ status: "error", message: "Currency pair already in use" });
 
-            prisma.user_currencies.create({ data: { id_user: req.token.id, ...req.body } })
+            const dateMs = String(Date.now());
+
+            const options = {
+                ...req.body,
+                created_at: dateMs,
+                updated_at: dateMs
+            }
+
+            prisma.user_currencies.create({ data: { id_user: req.token.id, ...options } })
                 .then(() => res.json({ status: "OK", message: "Succes" }))
                 .catch(err => res.json({ status: "error", message: err.message }));
         })

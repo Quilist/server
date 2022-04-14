@@ -28,8 +28,22 @@ router.post("/add", async (req, res) => {
         }
     }
 
+    const dateMs = String(Date.now());
+
+    const options = {
+        id_user: req.token.id,
+        name,
+        mobile,
+        company,
+        edrpou,
+        nds,
+        code_nds,
+        created_at: dateMs,
+        updated_at: dateMs
+    }
+
     // отправка запроса
-    prisma.suppliers.create({ data: { id_user: req.token.id, name, mobile, company, edrpou, nds, code_nds } })
+    prisma.suppliers.create({ data: options })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
@@ -58,8 +72,19 @@ router.post("/:id/edit", async (req, res) => {
         }
     }
 
+    const options = {
+        id_user: req.token.id,
+        name,
+        mobile,
+        company,
+        edrpou,
+        nds,
+        code_nds,
+        updated_at: String(Date.now())
+    }
+
     // отправка запроса
-    prisma.suppliers.update({ data: req.token.id, name, mobile, company, edrpou, nds, code_nds, where: { id: req.params.id } })
+    prisma.suppliers.update({ data: options, where: { id: Number(req.params.id) } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });

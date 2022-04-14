@@ -15,7 +15,13 @@ router.post("/add", async (req, res) => {
         return res.json({ status: "error", message: "incorrect name or phone" })
     }
 
-    const options = { ...req.body }
+    const dateMs = String(Date.now());
+
+    const options = {
+        ...req.body,
+        created_at: dateMs,
+        updated_at: dateMs
+    }
 
     options.order_supplier = JSON.stringify(add_order_supplier);
     delete options.add_order_supplier;
@@ -28,7 +34,7 @@ router.post("/add", async (req, res) => {
 // получение Employee по айди
 router.get("/:id", (req, res) => {
     // отправка запроса
-    prisma.employees.findUnique({ where: { id: req.params.id } })
+    prisma.employees.findUnique({ where: { id: Number(req.params.id) } })
         .then((result) => {
             if (!result) return res.json({ status: "error", message: "Unknow id" });
             // проверка на пренадлежность клиента к пользователю
@@ -51,12 +57,13 @@ router.post("/:id/edit", async (req, res) => {
         return res.json({ status: "error", message: "incorrect name or phone" })
     }
 
-    const options = { ...req.body }
+    const options = { ...req.body, updated_at: String(Date.now()) }
 
     options.order_supplier = JSON.stringify(add_order_supplier);
     delete options.add_order_supplier;
+
     // отправка запроса
-    prisma.employees.update({ data: { ...req.body }, where: { id: req.params.id } })
+    prisma.employees.update({ data: options, where: { id: Number(req.params.id) } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
