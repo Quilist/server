@@ -318,6 +318,7 @@ model Supplier {
   created_at String
   updated_at String
   deleted_at String?
+  products   Product[]
 }
 
 model UserCurrency {
@@ -349,20 +350,22 @@ model ProductGroup {
 
 model Product {
   id          Int                 @id @default(autoincrement())
-  user        User                @relation(fields: [id_user], references: [id])
+  user        User?               @relation(fields: [id_user], references: [id])
   id_user     Int
   is_model    Boolean             @default(false)
   parent_id   Int?
   name        String
-  group       ProductGroup        @relation(fields: [group_id], references: [id])
+  group       ProductGroup?       @relation(fields: [group_id], references: [id])
   group_id    Int
-  unit        Unit                @relation(fields: [unit_id], references: [id])
+  unit        Unit?               @relation(fields: [unit_id], references: [id])
   unit_id     Int
   barcode     String
   vendor_code String
+  supplier    Supplier?           @relation(fields: [supplier_id], references: [id])
   supplier_id Int
   min_stock   Int                 @default(0)
-  note        String              @db.Text
+  price       Decimal             @db.Decimal(9, 2)
+  note        String?             @db.Text
   created_at  String
   updated_at  String
   deleted_at  String?
@@ -371,7 +374,7 @@ model Product {
 
 model ProductAmountData {
   id          Int     @id @default(autoincrement())
-  product     Product @relation(fields: [product_id], references: [id])
+  product     Product? @relation(fields: [product_id], references: [id])
   product_id  Int
   type        String
   name        String
