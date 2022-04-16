@@ -34,7 +34,7 @@ class itemsController {
         try {
             const page = Number(req.query.page) || 1;
             const limit = Number(req.query.limit) || 25;
-
+            console.log(req.originalUrl.split("/")[1])
             const data = await itemsService.all(page, limit, req.originalUrl.split("/")[1])
 
             return res.json({ status: "OK", message: data })
