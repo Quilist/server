@@ -1,13 +1,135 @@
 const express = require("express");
+const prisma = require("../../database/database");
 const router = express.Router();
 
 // const prisma = require("../../database/database");
 // const utils = require("../../controllers/utils");
 // const itemsController = require("../../controllers/items/items-controller");
 
-router.get("/", async (req, res) => res.json({ status: "OK", message: [] }));
+//router.get("/", async (req, res) => res.json({ status: "OK", message: [] }));
 
 // // получение всех money пользователя
+router.get("/", (req, res) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 25;
+
+  prisma.pay.findMany({ skip: limit * (page - 1), take: limit })
+    .then(async (result) => {
+      const total = await prisma.pay.count();
+
+      res.json({
+        status: "OK", message: {
+          items: result,
+          paginations: {
+            total: total,
+            last_page: total <= limit ? 1 : total / limit
+          }
+        }
+      });
+    })
+    .catch(err => res.json({ status: "error", message: err.message }));
+});
+
+router.post("/add", async(req, res) => {
+  const dateMs = String(Date.now());
+
+  // const amountData = req.body.amount_data;
+  // delete req.body.amount_data;
+  // console.log('amountData', amountData)
+
+  const data = {
+    ...req.body,
+    id_user: req.token.id,
+    number: 1,
+    updated_at: dateMs
+  }
+
+  try {
+    const pay = await prisma.pay.create({ data: data })
+    //const [result] = await prisma.$queryRaw`SELECT LAST_INSERT_ID() AS id`
+    console.log(pay)
+    // if(amountData && amountData.length > 0) {
+    //   let subData = {};
+    //   amountData.forEach(function (item) {
+    //     subData = {
+    //       ...item,
+    //       product_id: result.id,
+    //       created_at: dateMs,
+    //       updated_at: dateMs
+    //     }
+    //     prisma.productAmountData.create({ data: subData })
+    //   });
+    //   //amountData.map(obj => ({ ...obj, product_id: result.id }))
+    //   // await prisma.productAmountData.createMany({
+    //   //   data: amountData
+    //   // })
+    // }
+
+    res.json({ status: "OK",
+      message: "Success"})
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+});
+
+router.get("/:id", (req, res) => {
+
+  prisma.pay.findUnique({ where: { id: Number(req.params.id) } })
+    .then((result) => {
+      if (!result) return res.json({ status: "error", message: "Unknown id" });
+
+      if (result.id_user !== req.token.id) {
+        return res.json({ status: "error", message: "Action not allowed" });
+      }
+
+      res.json({ status: "OK", message: result });
+    })
+    .catch(err => res.json({ status: "error", message: err.message }));
+});
+
+router.post("/:id/remove", (req, res) => {
+  prisma.pay.delete({ where: { id: Number(req.params.id) } })
+    .then(() => res.json({ status: "OK", message: "Succes" }))
+    .catch(err => res.json({ status: "error", message: err.message }));
+});
+
+router.get("/auxiliary/data", async (req, res) => {
+
+  const type = req.query.type
+  const types = {
+    pay_supplier: "supplier",
+    pay_customer: "client",
+    pay_expend: "expenditure",
+
+    receive_income: "incomeItem",
+    receive_customer: "client",
+    receive_supplier: "supplier"
+  }
+
+  const supplier = await prisma[types[type]].findMany();
+  const cashAccount = await prisma.cashAccount.findMany();
+
+  const legalEntity = await prisma.legalEntity.findMany();
+  const currency = await prisma.currency.findMany();
+
+  const data = {
+    cash_accounts: cashAccount,
+    legal_entites: legalEntity,
+    currencies: currency,
+    items: supplier
+  };
+
+  Promise.all([data])
+    .then(elem => {
+      res.json({
+        status: "OK", message: data
+      });
+    })
+    .catch(({ message }) => res.json({ status: "error", message }));
+
+});
+
 // router.get("/", utils.isTokenValid, async (req, res) => {
 //   const date_from = req.query.date_from || 0;
 //   const date_to = req.query.date_to || Date.now();

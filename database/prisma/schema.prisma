@@ -271,13 +271,13 @@ model LegalEntity {
 
 model Pay {
   id              Int       @id @default(autoincrement())
-  user            User      @relation(fields: [id_user], references: [id])
+  user            User?     @relation(fields: [id_user], references: [id])
   id_user         Int
   number          Int
   type_id         Int
   type            String
   type_order      String
-  cash_account_id String
+  cash_account_id Int
   legal_entity_id Int?
   note            String?   @db.Text
   payments        PayType[] @relation("Payments")

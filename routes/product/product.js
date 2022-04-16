@@ -24,19 +24,46 @@ router.get("/", (req, res) => {
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
-router.post("/add", (req, res) => {
-    const dateMs = String(Date.now());
+router.post("/add", async(req, res) => {
+  const dateMs = String(Date.now());
 
-    const data = {
-      ...req.body,
-      id_user: req.token.id,
-      created_at: dateMs,
-      updated_at: dateMs
+  const amountData = req.body.amount_data;
+  delete req.body.amount_data;
+  console.log('amountData', amountData)
+  const data = {
+    ...req.body,
+    id_user: req.token.id,
+    created_at: dateMs,
+    updated_at: dateMs
+  }
+
+  try {
+    await prisma.product.create({ data: data })
+    const [result] = await prisma.$queryRaw`SELECT LAST_INSERT_ID() AS id`
+    console.log(result.id)
+    if(amountData && amountData.length > 0) {
+      let subData = {};
+      amountData.forEach(function (item) {
+        subData = {
+          ...item,
+          product_id: result.id,
+          created_at: dateMs,
+          updated_at: dateMs
+        }
+        prisma.productAmountData.create({ data: subData })
+      });
+      //amountData.map(obj => ({ ...obj, product_id: result.id }))
+      // await prisma.productAmountData.createMany({
+      //   data: amountData
+      // })
     }
 
-    prisma.product.create({ data: data })
-        .then(() => res.json({ status: "OK", message: "Success" }))
-        .catch(err => res.json({ status: "error", message: err.message }));
+    res.json({ status: "OK",
+      message: "Success"})
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
 });
 
 
