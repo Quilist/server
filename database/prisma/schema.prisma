@@ -155,7 +155,6 @@ model cash_accounts {
   created_at        String
   updated_at        String
   deleted_at        String?
-
   CurrencyExchange currency_exchange[]
   Employee         employees[]
 }
@@ -325,7 +324,6 @@ model ProductGroup {
   created_at String
   updated_at String
   products   Product[]
-
   @@map("product_group")
 }
 
@@ -361,6 +359,5 @@ model ProductAmountData {
   currency_id String
   created_at  String
   updated_at  String
-
   @@map("product_amount_data")
 }

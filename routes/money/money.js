@@ -8,12 +8,32 @@ const router = express.Router();
 
 //router.get("/", async (req, res) => res.json({ status: "OK", message: [] }));
 
-// // получение всех money пользователя
-router.get("/", (req, res) => {
-  const page = Number(req.query.page) || 1;
-  const limit = Number(req.query.limit) || 25;
 
-  prisma.pay.findMany({ skip: limit * (page - 1), take: limit })
+router.get("/", (req, res) => {
+  const { search, reqPage, reqLimit, orderBy } = req.query
+  const page = Number(reqPage) || 1;
+  const limit = Number(reqLimit) || 25;
+
+  prisma.pay.findMany({
+    skip: limit * (page - 1),
+    take: limit,
+    orderBy: {
+      id: orderBy || 'desc',
+    },
+    include: {
+      payments:  {
+        include: {
+          currency: true
+        }
+      },
+      cash_account: {
+        include: {
+          user_currency: true
+        }
+      },
+      legal_entity: true,
+    },
+  })
     .then(async (result) => {
       const total = await prisma.pay.count();
 
@@ -33,9 +53,14 @@ router.get("/", (req, res) => {
 router.post("/add", async(req, res) => {
   const dateMs = String(Date.now());
 
-  // const amountData = req.body.amount_data;
-  // delete req.body.amount_data;
-  // console.log('amountData', amountData)
+  const paymentList = req.body.payments || [];
+  const changeList = req.body.changes || [];
+  const totalList = req.body.totals || [];
+  const payList = [...paymentList, ...changeList, ...totalList];
+
+  delete req.body.payments;
+  delete req.body.changes;
+  delete req.body.totals;
 
   const data = {
     ...req.body,
@@ -46,24 +71,21 @@ router.post("/add", async(req, res) => {
 
   try {
     const pay = await prisma.pay.create({ data: data })
-    //const [result] = await prisma.$queryRaw`SELECT LAST_INSERT_ID() AS id`
-    console.log(pay)
-    // if(amountData && amountData.length > 0) {
-    //   let subData = {};
-    //   amountData.forEach(function (item) {
-    //     subData = {
-    //       ...item,
-    //       product_id: result.id,
-    //       created_at: dateMs,
-    //       updated_at: dateMs
-    //     }
-    //     prisma.productAmountData.create({ data: subData })
-    //   });
-    //   //amountData.map(obj => ({ ...obj, product_id: result.id }))
-    //   // await prisma.productAmountData.createMany({
-    //   //   data: amountData
-    //   // })
-    // }
+    if(payList && payList.length > 0) {
+      let subData = [];
+      payList.forEach(function (item) {
+        subData.push({
+          ...item,
+          pay_id: pay.id,
+          created_at: dateMs,
+          updated_at: dateMs
+        })
+      });
+      await prisma.payType.createMany({
+        data: subData,
+        skipDuplicates: false,
+      })
+    }
 
     res.json({ status: "OK",
       message: "Success"})
@@ -75,7 +97,24 @@ router.post("/add", async(req, res) => {
 
 router.get("/:id", (req, res) => {
 
-  prisma.pay.findUnique({ where: { id: Number(req.params.id) } })
+  prisma.pay.findUnique({
+    where: {
+      id: Number(req.params.id)
+    },
+    include: {
+      payments:  {
+        include: {
+          currency: true
+        }
+      },
+      cash_account: {
+        include: {
+          user_currency: true
+        }
+      },
+      legal_entity: true,
+    },
+  })
     .then((result) => {
       if (!result) return res.json({ status: "error", message: "Unknown id" });
 
@@ -86,6 +125,56 @@ router.get("/:id", (req, res) => {
       res.json({ status: "OK", message: result });
     })
     .catch(err => res.json({ status: "error", message: err.message }));
+});
+
+router.post("/:id/edit", async (req, res) => {
+  const id = Number(req.params.id)
+  await prisma.payType.deleteMany({ where: { pay_id: id } })
+
+  const dateMs = String(Date.now());
+
+  const paymentList = req.body.payments || [];
+  const changeList = req.body.changes || [];
+  const totalList = req.body.totals || [];
+  const payList = [...paymentList, ...changeList, ...totalList];
+
+  delete req.body.payments;
+  delete req.body.changes;
+  delete req.body.totals;
+  delete req.body.created_at;
+
+  const data = {
+    ...req.body,
+    updated_at: dateMs
+  }
+
+  try {
+    await prisma.pay.update({ data: { ...data }, where: { id: id } })
+    if(payList && payList.length > 0) {
+      let subData = [];
+      payList.forEach(function (item) {
+        subData.push({
+          amount: Number(item.amount),
+          currency_id: Number(item.currency_id),
+          type_amount: item.type_amount,
+          type_pay: item.type_pay,
+          pay_id: id,
+          created_at: dateMs,
+          updated_at: dateMs
+        })
+      });
+      await prisma.payType.createMany({
+        data: subData,
+        skipDuplicates: false,
+      })
+    }
+
+    res.json({ status: "OK",
+      message: "Success"})
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
 });
 
 router.post("/:id/remove", (req, res) => {
@@ -107,7 +196,6 @@ router.get("/auxiliary/data", async (req, res) => {
     receive_supplier: "supplier"
   }
 
-  const supplier = await prisma[types[type]].findMany();
   const cashAccount = await prisma.cashAccount.findMany();
 
   const legalEntity = await prisma.legalEntity.findMany();
@@ -116,9 +204,14 @@ router.get("/auxiliary/data", async (req, res) => {
   const data = {
     cash_accounts: cashAccount,
     legal_entites: legalEntity,
-    currencies: currency,
-    items: supplier
+    currencies: currency
   };
+
+  if(type) {
+    const itemList = await prisma[types[type]].findMany();
+    data.items = itemList
+  }
+
 
   Promise.all([data])
     .then(elem => {
