@@ -11,7 +11,7 @@ router.get("/", itemsController.all);
 router.post("/add", async (req, res) => {
     const { f_name, s_name, mobile, add_order_supplier } = req.body;
 
-    if (!f_name?.length < 3 || s_name?.length < 3 || mobile?.length !== 10) {
+    if (f_name?.length < 3 || s_name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
     }
 
