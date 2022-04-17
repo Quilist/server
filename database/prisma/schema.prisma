@@ -56,8 +56,8 @@ model currency {
   cash_accounts_balance    cash_and_accounts[]
   from_currencies_exchange currency_exchange[] @relation("FromExhangeCurrency")
   to_currencies_exchange   currency_exchange[] @relation("ToExhangeCurrency")
-  from_user_currencies     user_currencies[]      @relation("FromUserCurrency")
-  to_user_currencies       user_currencies[]      @relation("ToUserCurrency")
+  from_user_currencies     user_currencies[]   @relation("FromUserCurrency")
+  to_user_currencies       user_currencies[]   @relation("ToUserCurrency")
 }
 
 model banks_details {
@@ -244,6 +244,7 @@ model legal_entites {
   mobile     String?
   account    String?
   address    String?
+  edrpou     String?
   inn        String?
   legal_name String?
   low_system String?
@@ -255,8 +256,8 @@ model legal_entites {
 }
 
 model pay {
-  id              Int       @id @default(autoincrement())
-  user            User      @relation(fields: [id_user], references: [id])
+  id              Int        @id @default(autoincrement())
+  user            User       @relation(fields: [id_user], references: [id])
   id_user         Int
   number          Int
   type_id         Int
@@ -264,7 +265,7 @@ model pay {
   type_order      String
   cash_account_id String
   legal_entity_id Int?
-  note            String?   @db.Text
+  note            String?    @db.Text
   payments        pay_type[] @relation("Payments")
   created_at      String
   updated_at      String
