@@ -32,7 +32,7 @@ class itemsService {
 
     async all(page, limit, table) {
 
-        const data = await prisma.table.findMany({ skip: limit * (page - 1), take: limit })
+        const data = await prisma[table].findMany({ skip: limit * (page - 1), take: limit })
         const total = await prisma[table].count();
 
         return {
