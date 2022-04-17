@@ -45,7 +45,7 @@ const oAuthCallback = async (req, res) => {
                         updated_at: dateMs
                     }
                 })
-                    .then(res => {
+                    .then(result => {
                         const authToken = utils.authToken(email, req.ip, result.id);
 
                         res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
