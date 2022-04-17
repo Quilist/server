@@ -17,7 +17,7 @@ router.post("/add", async (req, res) => {
 
     const dateMs = String(Date.now());
     // отправка запроса
-    prisma.legal_entites.create({ id_user: req.token.id, ...req.body, created_at: dateMs, updated_at: dateMs })
+    prisma.legal_entites.create({ data: { id_user: req.token.id, ...req.body, created_at: dateMs, updated_at: dateMs } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
