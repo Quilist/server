@@ -45,7 +45,7 @@ model User {
 }
 
 //Reference
-model Currency {
+model currency {
   id                       Int                  @id @default(autoincrement())
   name                     String?
   represent                String?
@@ -60,7 +60,7 @@ model Currency {
   to_user_currencies       UserCurrency[]       @relation("ToUserCurrency")
 }
 
-model BankDetail {
+model banks_details {
   id               Int           @id @default(autoincrement())
   user             User          @relation(fields: [id_user], references: [id])
   id_user          Int
@@ -70,11 +70,9 @@ model BankDetail {
   created_at       String
   updated_at       String
   cash_accounts    CashAccount[]
-
-  @@map("bank_detail")
 }
 
-model Expenditure {
+model expenditure {
   id         Int    @id @default(autoincrement())
   user       User   @relation(fields: [id_user], references: [id])
   id_user    Int
@@ -83,18 +81,16 @@ model Expenditure {
   updated_at String
 }
 
-model IncomeItem {
+model income_items {
   id         Int    @id @default(autoincrement())
   user       User   @relation(fields: [id_user], references: [id])
   id_user    Int
   name       String @unique
   created_at String
   updated_at String
-
-  @@map("income_item")
 }
 
-model Measure {
+model measure {
   id         Int    @id @default(autoincrement())
   user       User   @relation(fields: [id_user], references: [id])
   id_user    Int
@@ -104,7 +100,7 @@ model Measure {
   products   Product[]
 }
 
-model StoreHouse {
+model storehouse {
   id         Int    @id @default(autoincrement())
   user       User   @relation(fields: [id_user], references: [id])
   id_user    Int
@@ -113,30 +109,26 @@ model StoreHouse {
   updated_at String
 }
 
-model TypePrice {
+model type_price {
   id         Int    @id @default(autoincrement())
   user       User   @relation(fields: [id_user], references: [id])
   id_user    Int
   name       String @unique
   created_at String
   updated_at String
-
-  @@map("type_price")
 }
 
 //Cash and accounts
-model CashAccountBalance {
+model cash_and_accounts {
   id          Int      @id @default(autoincrement())
   currency    Currency @relation(fields: [currency_id], references: [id])
   currency_id Int
   balance     Decimal  @db.Decimal(9, 2)
   created_at  String
   updated_at  String
-
-  @@map("cash_account_balance")
 }
 
-model CashAccount {
+model cash_accounts {
   id                Int           @id @default(autoincrement())
   user              User          @relation(fields: [id_user], references: [id])
   id_user           Int
@@ -159,10 +151,9 @@ model CashAccount {
 
   CurrencyExchange CurrencyExchange[]
   Employee         Employee[]
-  @@map("cash_account")
 }
 
-model Client {
+model clients {
   id         Int     @id @default(autoincrement())
   user       User    @relation(fields: [id_user], references: [id])
   id_user    Int
@@ -181,7 +172,7 @@ model Client {
   deleted_at String?
 }
 
-model CurrencyExchange {
+model currency_exchange {
   id               Int         @id @default(autoincrement())
   user             User        @relation(fields: [id_user], references: [id])
   id_user          Int
@@ -198,11 +189,9 @@ model CurrencyExchange {
   created_at       String
   updated_at       String
   deleted_at       String?
-
-  @@map("currency_exchange")
 }
 
-model MovingMoney {
+model moving_money {
   id                   Int         @id @default(autoincrement())
   user                 User        @relation(fields: [id_user], references: [id])
   id_user              Int
@@ -215,11 +204,9 @@ model MovingMoney {
   created_at           String
   updated_at           String
   deleted_at           String?
-
-  @@map("moving_money")
 }
 
-model Employee {
+model employees {
   id             Int          @id @default(autoincrement())
   user           User         @relation(fields: [id_user], references: [id])
   id_user        Int
@@ -240,7 +227,7 @@ model Employee {
   deleted_at     String?
 }
 
-model LegalEntity {
+model legal_entites {
   id         Int     @id @default(autoincrement())
   user       User    @relation(fields: [id_user], references: [id])
   id_user    Int
@@ -259,11 +246,9 @@ model LegalEntity {
   updated_at String
   deleted_at String?
   pays       Pay[]
-
-  @@map("legal_entity")
 }
 
-model Pay {
+model pay {
   id              Int       @id @default(autoincrement())
   user            User?     @relation(fields: [id_user], references: [id])
   id_user         Int
@@ -282,7 +267,7 @@ model Pay {
   deleted_at      String?
 }
 
-model PayType {
+model pay_type {
   id          Int     @id @default(autoincrement())
   pay         Pay?    @relation("Payments", fields: [pay_id], references: [id], onDelete: Cascade)
   pay_id      Int
@@ -293,11 +278,9 @@ model PayType {
   type_amount String
   created_at  String
   updated_at  String
-
-  @@map("pay_type")
 }
 
-model Supplier {
+model suppliers {
   id         Int     @id @default(autoincrement())
   user       User    @relation(fields: [id_user], references: [id])
   id_user    Int
@@ -316,7 +299,7 @@ model Supplier {
   products   Product[]
 }
 
-model UserCurrency {
+model user_currencies {
   id               Int      @id @default(autoincrement())
   user             User     @relation(fields: [id_user], references: [id])
   id_user          Int
@@ -328,8 +311,6 @@ model UserCurrency {
   created_at       String
   updated_at       String
   deleted_at       String?
-
-  @@map("user_currency")
 }
 
 //Products
