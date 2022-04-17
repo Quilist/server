@@ -10,16 +10,37 @@ router.get("/", async (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 25;
 
-    itemsService.all(page, limit, "user_currency")
-        .then((res) => res.json({ status: "OK", message: res }))
+    itemsService.all(page, limit, "user_currencies")
+        .then((result) => res.json({ status: "OK", message: result }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // получение all_currencies
-router.get("/auxiliary", async (req, res) => {
-    prisma.currency.findMany()
-        .then((res) => res.json({ status: "OK", message: res }))
-        .catch(err => res.json({ status: "error", message: err.message }));
+router.get("/options", async (req, res) => {
+    const currency = [
+        {
+            id: 1,
+            name: "гривна",
+            represent: "uan"
+        },
+        {
+            id: 2,
+            name: "швейцарский франк",
+            represent: "chf"
+        },
+        {
+            id: 3,
+            name: "доллар",
+            represent: "usd"
+        },
+        {
+            id: 4,
+            name: "евро",
+            represent: "eur"
+        },
+    ];
+
+    res.json({ status: "OK", message: currency });
 });
 
 // добавление currencies

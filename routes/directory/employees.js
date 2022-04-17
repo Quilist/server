@@ -11,7 +11,7 @@ router.get("/", itemsController.all);
 router.post("/add", async (req, res) => {
     const { f_name, s_name, mobile, add_order_supplier } = req.body;
 
-    if (!f_name?.length < 3 || s_name?.length < 3 || mobile?.length !== 10) {
+    if (f_name?.length < 3 || s_name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
     }
 
@@ -25,8 +25,9 @@ router.post("/add", async (req, res) => {
 
     options.order_supplier = JSON.stringify(add_order_supplier);
     delete options.add_order_supplier;
+    
     // отправка запроса
-    prisma.employees.create({ id_user: req.token.id, ...options })
+    prisma.employees.create({ data: { id_user: req.token.id, ...options } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
