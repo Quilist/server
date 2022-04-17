@@ -25,6 +25,8 @@ router.post("/add", async (req, res) => {
 
     options.order_supplier = JSON.stringify(add_order_supplier);
     delete options.add_order_supplier;
+    
+    console.log(options)
     // отправка запроса
     prisma.employees.create({ data: { id_user: req.token.id, ...options } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
