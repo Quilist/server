@@ -38,12 +38,10 @@ model User {
   LegalEntity      LegalEntity[]
   Measure          Measure[]
   Pay              Pay[]
-  PayType          PayType[]
   StoreHouse       StoreHouse[]
   Supplier         Supplier[]
   TypePrice        TypePrice[]
   UserCurrency     UserCurrency[]
-  Unit             Unit[]
 }
 
 //Reference
@@ -53,6 +51,8 @@ model Currency {
   represent                String?
   created_at               String
   updated_at               String
+  pay_types                PayType[]
+  cash_accounts            CashAccount[]
   cash_accounts_balance    CashAccountBalance[]
   from_currencies_exchange CurrencyExchange[]   @relation("FromExhangeCurrency")
   to_currencies_exchange   CurrencyExchange[]   @relation("ToExhangeCurrency")
@@ -101,6 +101,7 @@ model Measure {
   name       String @unique
   created_at String
   updated_at String
+  products   Product[]
 }
 
 model StoreHouse {
@@ -123,16 +124,6 @@ model TypePrice {
   @@map("type_price")
 }
 
-model Unit {
-  id         Int       @id @default(autoincrement())
-  user       User      @relation(fields: [id_user], references: [id])
-  id_user    Int
-  name       String    @unique
-  created_at String
-  updated_at String
-  products   Product[]
-}
-
 //Cash and accounts
 model CashAccountBalance {
   id          Int      @id @default(autoincrement())
@@ -150,6 +141,7 @@ model CashAccount {
   user              User          @relation(fields: [id_user], references: [id])
   id_user           Int
   name              String?
+  user_currency     Currency?     @relation(fields: [user_currency_id], references: [id])
   user_currency_id  Int
   bank_detail       BankDetail?   @relation(fields: [bank_detail_id], references: [id])
   bank_detail_id    Int?
@@ -160,6 +152,7 @@ model CashAccount {
   stream            Json?
   from_moving_money MovingMoney[] @relation("FromCashAccount")
   to_moving_money   MovingMoney[] @relation("ToCashAccount")
+  pays              Pay[]
   created_at        String
   updated_at        String
   deleted_at        String?
@@ -265,6 +258,7 @@ model LegalEntity {
   created_at String
   updated_at String
   deleted_at String?
+  pays       Pay[]
 
   @@map("legal_entity")
 }
@@ -277,7 +271,9 @@ model Pay {
   type_id         Int
   type            String
   type_order      String
+  cash_account    CashAccount? @relation(fields: [cash_account_id], references: [id])
   cash_account_id Int
+  legal_entity    LegalEntity? @relation(fields: [legal_entity_id], references: [id])
   legal_entity_id Int?
   note            String?   @db.Text
   payments        PayType[] @relation("Payments")
@@ -288,10 +284,9 @@ model Pay {
 
 model PayType {
   id          Int     @id @default(autoincrement())
-  user        User    @relation(fields: [id_user], references: [id])
-  id_user     Int
-  pay         Pay     @relation("Payments", fields: [pay_id], references: [id])
+  pay         Pay?    @relation("Payments", fields: [pay_id], references: [id], onDelete: Cascade)
   pay_id      Int
+  currency    Currency? @relation(fields: [currency_id], references: [id])
   currency_id Int
   amount      Decimal @db.Decimal(15, 2)
   type_pay    String
@@ -357,8 +352,8 @@ model Product {
   name        String
   group       ProductGroup?       @relation(fields: [group_id], references: [id])
   group_id    Int
-  unit        Unit?               @relation(fields: [unit_id], references: [id])
-  unit_id     Int
+  measure     Measure?            @relation(fields: [measure_id], references: [id])
+  measure_id  Int
   barcode     String
   vendor_code String
   supplier    Supplier?           @relation(fields: [supplier_id], references: [id])
@@ -374,12 +369,12 @@ model Product {
 
 model ProductAmountData {
   id          Int     @id @default(autoincrement())
-  product     Product? @relation(fields: [product_id], references: [id])
+  product     Product? @relation(fields: [product_id], references: [id], onDelete: Cascade)
   product_id  Int
   type        String
   name        String
   amount      Decimal @db.Decimal(9, 2)
-  currency_id String
+  currency_id Int
   created_at  String
   updated_at  String
 

@@ -29,7 +29,7 @@ router.post("/add", async(req, res) => {
 
   const amountData = req.body.amount_data;
   delete req.body.amount_data;
-  console.log('amountData', amountData)
+
   const data = {
     ...req.body,
     id_user: req.token.id,
@@ -38,24 +38,21 @@ router.post("/add", async(req, res) => {
   }
 
   try {
-    await prisma.product.create({ data: data })
-    const [result] = await prisma.$queryRaw`SELECT LAST_INSERT_ID() AS id`
-    console.log(result.id)
+    const product = await prisma.product.create({ data: data })
     if(amountData && amountData.length > 0) {
-      let subData = {};
+      let subData = [];
       amountData.forEach(function (item) {
-        subData = {
+        subData.push({
           ...item,
-          product_id: result.id,
+          product_id: product.id,
           created_at: dateMs,
           updated_at: dateMs
-        }
-        prisma.productAmountData.create({ data: subData })
+        })
       });
-      //amountData.map(obj => ({ ...obj, product_id: result.id }))
-      // await prisma.productAmountData.createMany({
-      //   data: amountData
-      // })
+
+      await prisma.productAmountData.createMany({
+        data: subData
+      })
     }
 
     res.json({ status: "OK",
@@ -107,7 +104,7 @@ router.get("/auxiliary/data", async (req, res) => {
   const typeList = [{name: 'Товар', value: 'product'}, {name: 'Комплект', value: 'set'}, {name: 'Услуга', value: 'service'}];
   const storehouse = await prisma.storeHouse.findMany();
   const typePrice = await prisma.typePrice.findMany();
-  const unit = await prisma.unit.findMany();
+  const measure = await prisma.measure.findMany();
   const supplier = await prisma.supplier.findMany();
   const group = await prisma.productGroup.findMany();
   const currency = await prisma.currency.findMany();
@@ -115,7 +112,7 @@ router.get("/auxiliary/data", async (req, res) => {
   const data = {
     storehouses: storehouse,
     type_prices: typePrice,
-    units: unit,
+    measures: measure,
     suppliers: supplier,
     groups: group,
     types: typeList,
