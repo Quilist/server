@@ -11,7 +11,7 @@ router.get("/", async (req, res) => {
     const limit = Number(req.query.limit) || 25;
 
     itemsService.all(page, limit, "user_currencies")
-        .then((res) => res.json({ status: "OK", message: res }))
+        .then((result) => res.json({ status: "OK", message: result }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
@@ -40,7 +40,7 @@ router.get("/auxiliary", async (req, res) => {
         },
     ];
 
-    res.json({ status: "OK", message: currency })
+    res.json({ status: "OK", message: currency });
 });
 
 // добавление currencies
