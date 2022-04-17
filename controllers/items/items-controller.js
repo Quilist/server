@@ -6,7 +6,7 @@ class itemsController {
         try {
             await itemsService.add(req.originalUrl.split("/")[1], { id_user: req.token.id, ...req.body });
 
-            return res.json({ status: "error", message: "Succes" });
+            return res.json({ status: "OK", message: "Succes" });
         } catch (e) {
             next(e)
         }
@@ -16,7 +16,7 @@ class itemsController {
         try {
             await itemsService.edit(req.originalUrl.split("/")[1], { ...req.body }, Number(req.params.id));
 
-            return res.json({ status: "error", message: "Succes" });
+            return res.json({ status: "OK", message: "Succes" });
         } catch (e) {
             next(e)
         }
@@ -34,7 +34,7 @@ class itemsController {
         try {
             const page = Number(req.query.page) || 1;
             const limit = Number(req.query.limit) || 25;
-            console.log(req.originalUrl.split("/")[1])
+
             const data = await itemsService.all(page, limit, req.originalUrl.split("/")[1])
 
             return res.json({ status: "OK", message: data })
