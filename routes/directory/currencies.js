@@ -16,7 +16,7 @@ router.get("/", async (req, res) => {
 });
 
 // получение all_currencies
-router.get("/auxiliary", async (req, res) => {
+router.get("/options", async (req, res) => {
     const currency = [
         {
             id: 1,
