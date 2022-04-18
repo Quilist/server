@@ -8,42 +8,43 @@ datasource db {
 }
 
 model User {
-  id               Int                 @id @default(autoincrement())
-  acc              String?
-  f_name           String?
-  s_name           String?
-  company          String?
-  e_mail           String              @unique
-  phone            String?
-  username         String?
-  pass             String?
-  status           Int                 @default(1)
-  role             Int                 @default(1)
-  google           String?
-  facebook         String?
-  address          String?
-  notes            String?
-  created_at       String
-  updated_at       String
-  deleted_at       String?
-  products         products[]
-  banks_details    banks_details[]
-  cash_accounts    cash_accounts[]
-  Client           clients[]
-  CurrencyExchange currency_exchange[]
-  MovingMoney      moving_money[]
-  Employee         employees[]
-  Expenditure      expenditure[]
-  IncomeItem       income_items[]
-  LegalEntity      legal_entites[]
-  Measure          measure[]
-  Pay              pay[]
-  PayType          pay_type[]
-  StoreHouse       storehouse[]
-  Supplier         suppliers[]
-  TypePrice        type_price[]
-  UserCurrency     user_currencies[]
-  products_groups  products_groups[]
+  id                  Int                   @id @default(autoincrement())
+  acc                 String?
+  f_name              String?
+  s_name              String?
+  company             String?
+  e_mail              String                @unique
+  phone               String?
+  username            String?
+  pass                String?
+  status              Int                   @default(1)
+  role                Int                   @default(1)
+  google              String?
+  facebook            String?
+  address             String?
+  notes               String?
+  created_at          String
+  updated_at          String
+  deleted_at          String?
+  products            products[]
+  banks_details       banks_details[]
+  cash_accounts       cash_accounts[]
+  Client              clients[]
+  CurrencyExchange    currency_exchange[]
+  MovingMoney         moving_money[]
+  Employee            employees[]
+  Expenditure         expenditure[]
+  IncomeItem          income_items[]
+  LegalEntity         legal_entites[]
+  Measure             measure[]
+  Pay                 pay[]
+  PayType             pay_type[]
+  StoreHouse          storehouse[]
+  Supplier            suppliers[]
+  TypePrice           type_price[]
+  UserCurrency        user_currencies[]
+  products_groups     products_groups[]
+  cash_accounts_users cash_accounts_users[]
 }
 
 //Reference
@@ -154,6 +155,7 @@ model cash_accounts {
   Employee              employees[]
   pay                   pay[]
   cash_accounts_balance cash_accounts_balance[]
+  cash_accounts_users   cash_accounts_users[]
 }
 
 model cash_accounts_balance {
@@ -163,6 +165,16 @@ model cash_accounts_balance {
   currency        currency?      @relation(fields: [currency_id], references: [id])
   currency_id     Int
   balance         Decimal        @db.Decimal(9, 2)
+}
+
+model cash_accounts_users {
+  id              Int            @id @default(autoincrement())
+  user            User?          @relation(fields: [id_user], references: [id])
+  id_user         Int
+  cash_account    cash_accounts? @relation(fields: [cash_account_id], references: [id], onDelete: Cascade)
+  cash_account_id Int
+  created_at      String
+  updated_at      String
 }
 
 model clients {
@@ -376,4 +388,3 @@ model products_amount_data {
   created_at  String
   updated_at  String
 }
-

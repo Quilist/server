@@ -3,16 +3,16 @@ const prisma = require("../../database/database");
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  const { search, dateFrom, dateTo, reqPage, reqLimit, orderBy } = req.query;
+  const { search, date_from, date_to, page, limit, orderBy } = req.query;
   
-  const page = Number(reqPage) || 1;
-  const limit = Number(reqLimit) || 25;
+  const pageParam = Number(page) || 1;
+  const limitParam = Number(limit) || 25;
 
   const dateSearch = search
     ? {
       created_at: {
-        gte: dateFrom || '',
-        lt: dateTo || ''
+        gte: date_from || '',
+        lt: date_to || ''
       },
     }
     : {}
@@ -25,13 +25,22 @@ router.get("/", (req, res) => {
     }
     : {}
 
+  const date = new Date();
+  const startMilliseconds = date.getTime();
+  const endMilliseconds = date.getTime();
+
+  const msPerDay = 86400 * 1000;
+  const beginning = startMilliseconds - (startMilliseconds % msPerDay);
+
   prisma.pay.findMany({
     where: {
-      ...dateSearch,
-      ...searchData,
+      created_at: {
+        gte: date_from || String(beginning),
+        lt: date_to || String(endMilliseconds)
+      },
     },
-    skip: limit * (page - 1),
-    take: limit,
+    skip: limitParam * (pageParam - 1),
+    take: limitParam,
     orderBy: {
       created_at: orderBy || 'desc',
     },
@@ -81,7 +90,7 @@ router.get("/", (req, res) => {
           items: resultData,
           paginations: {
             total: total,
-            last_page: total <= limit ? 1 : total / limit
+            last_page: total <= limitParam ? 1 : total / limitParam
           }
         }
       });
