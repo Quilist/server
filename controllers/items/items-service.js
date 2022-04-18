@@ -30,9 +30,9 @@ class itemsService {
         return await prisma[table].delete({ where: { id: id } });
     }
 
-    async all(page, limit, table) {
+    async all(page, limit, table, token) {
 
-        const data = await prisma[table].findMany({ skip: limit * (page - 1), take: limit })
+        const data = await prisma[table].findMany({ skip: limit * (page - 1), take: limit, where: { id_user: token.id } })
         const total = await prisma[table].count();
 
         return {
@@ -51,8 +51,6 @@ class itemsService {
         if (!data) throw apiError.badRequest("Unknow id");
         // проверка на пренадлежность клиента к пользователю
         if (data.id_user !== token.id) {
-            console.log(data)
-            console.log(token)
             throw apiError.unathorizedError();
         }
 
