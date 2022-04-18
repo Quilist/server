@@ -51,6 +51,8 @@ class itemsService {
         if (!data) throw apiError.badRequest("Unknow id");
         // проверка на пренадлежность клиента к пользователю
         if (data.id_user !== token.id) {
+            console.log(data)
+            console.log(token)
             throw apiError.unathorizedError();
         }
 
