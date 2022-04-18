@@ -78,13 +78,15 @@ router.post("/:id/edit", async (req, res) => {
     }
 
     const options = {
-        id_user: req.token.id,
         name,
         mobile,
         company,
         edrpou,
         nds,
         code_nds,
+        mail,
+        address,
+        note: notes,
         updated_at: String(Date.now())
     }
 
