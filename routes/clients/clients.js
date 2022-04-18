@@ -9,7 +9,7 @@ router.get("/", (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 25;
 
-    prisma.client.findMany({ skip: limit * (page - 1), take: limit })
+    prisma.clients.findMany({ skip: limit * (page - 1), take: limit })
         .then(async (result) => {
 
             for (const index in result) {
@@ -17,7 +17,7 @@ router.get("/", (req, res) => {
                 result[index].mail = JSON.parse(result[index]?.mail)
             }
 
-            const total = await prisma.client.count();
+            const total = await prisma.clients.count();
 
             res.json({
                 status: "OK", message: {
@@ -56,7 +56,7 @@ router.post("/add", (req, res) => {
     }
 
     // отправка запроса
-    prisma.client.create({ data: { id_user: req.token.id, ...options } })
+    prisma.clients.create({ data: { id_user: req.token.id, ...options } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
@@ -64,7 +64,7 @@ router.post("/add", (req, res) => {
 // получение клиента по айди
 router.get("/:id", (req, res) => {
     // отправка запроса
-    prisma.client.findUnique({ where: { id: Number(req.params.id) } })
+    prisma.clients.findUnique({ where: { id: Number(req.params.id) } })
         .then((result) => {
             if (!result) return res.json({ status: "error", message: "Unknow id" });
 
@@ -104,7 +104,7 @@ router.post("/:id/edit", (req, res) => {
     }
 
     // отправка запроса
-    prisma.client.update({ data: { ...options }, where: { id: Number(req.params.id) } })
+    prisma.clients.update({ data: { ...options }, where: { id: Number(req.params.id) } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
