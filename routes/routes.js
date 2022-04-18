@@ -13,6 +13,7 @@ const facebookAuthRouter = require("./auth/oauth/facebook");
 const clientsRouter = require("./clients/clients");
 const payRouter = require("./pay/pay");
 
+const cashAccountRouter = require("./directory/cash_and_accounts");
 const moneyRouter = require("./money/money");
 const productRouter = require("./product/product");
 /*
@@ -52,6 +53,7 @@ fs.readdir('./routes/directory', (err, files) => {
     });
 });
 
+router.use("/cash_accounts", cashAccountRouter);
 router.use("/money", moneyRouter);
 router.use("/products", productRouter);
 

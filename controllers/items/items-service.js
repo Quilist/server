@@ -30,9 +30,9 @@ class itemsService {
         return await prisma[table].delete({ where: { id: id } });
     }
 
-    async all(page, limit, table) {
+    async all(page, limit, table, token) {
 
-        const data = await prisma.table.findMany({ skip: limit * (page - 1), take: limit })
+        const data = await prisma[table].findMany({ skip: limit * (page - 1), take: limit, where: { id_user: token.id } })
         const total = await prisma[table].count();
 
         return {

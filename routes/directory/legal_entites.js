@@ -14,8 +14,10 @@ router.post("/add", async (req, res) => {
     if (name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
     }
+
+    const dateMs = String(Date.now());
     // отправка запроса
-    prisma.legal_entites.create({ id_user: req.token.id, ...req.body })
+    prisma.legal_entites.create({ data: { id_user: req.token.id, ...req.body, created_at: dateMs, updated_at: dateMs } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });

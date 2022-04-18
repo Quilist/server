@@ -4,12 +4,14 @@ const router = express.Router();
 const prisma = require("../../database/database");
 const itemsController = require("../../controllers/items/items-controller");
 
+const youscore = require("../../services/youscore");
+
 // получение всех suppliers пользователя
 router.get("/", itemsController.all);
 
 // добавление supplier
 router.post("/add", async (req, res) => {
-    let { name, mobile, company, edrpou, nds, code_nds } = req.body;
+    let { name, mobile, mail, company, edrpou, nds, code_nds, address, notes } = req.body;
 
     if (name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
@@ -38,6 +40,9 @@ router.post("/add", async (req, res) => {
         edrpou,
         nds,
         code_nds,
+        mail,
+        address,
+        note: notes,
         created_at: dateMs,
         updated_at: dateMs
     }
@@ -53,7 +58,7 @@ router.get("/:id", itemsController.id);
 
 // редактирование supplier
 router.post("/:id/edit", async (req, res) => {
-    let { name, mobile, company, edrpou, nds, code_nds } = req.body;
+    let { name, mobile, mail, company, edrpou, nds, code_nds, address, notes } = req.body;
 
     if (name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
@@ -73,13 +78,15 @@ router.post("/:id/edit", async (req, res) => {
     }
 
     const options = {
-        id_user: req.token.id,
         name,
         mobile,
         company,
         edrpou,
         nds,
         code_nds,
+        mail,
+        address,
+        note: notes,
         updated_at: String(Date.now())
     }
 
