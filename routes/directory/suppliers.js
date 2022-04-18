@@ -4,6 +4,8 @@ const router = express.Router();
 const prisma = require("../../database/database");
 const itemsController = require("../../controllers/items/items-controller");
 
+const youscore = require("../../services/youscore");
+
 // получение всех suppliers пользователя
 router.get("/", itemsController.all);
 
