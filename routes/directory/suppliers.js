@@ -11,7 +11,7 @@ router.get("/", itemsController.all);
 
 // добавление supplier
 router.post("/add", async (req, res) => {
-    let { name, mobile, company, edrpou, nds, code_nds } = req.body;
+    let { name, mobile, company, edrpou, nds, code_nds, address, notes } = req.body;
 
     if (name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
@@ -58,7 +58,7 @@ router.get("/:id", itemsController.id);
 
 // редактирование supplier
 router.post("/:id/edit", async (req, res) => {
-    let { name, mobile, company, edrpou, nds, code_nds } = req.body;
+    let { name, mobile, mail, company, edrpou, nds, code_nds, address, notes } = req.body;
 
     if (name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
