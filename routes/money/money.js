@@ -25,17 +25,13 @@ router.get("/", (req, res) => {
     }
     : {}
 
-  const date = new Date();
-  const startMilliseconds = date.getTime();
-  const endMilliseconds = date.getTime();
-
-  const msPerDay = 86400 * 1000;
-  const beginning = startMilliseconds - (startMilliseconds % msPerDay);
+  const startMilliseconds = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
+  const endMilliseconds = new Date(new Date().setHours(23, 59, 59, 999)).getTime();
 
   prisma.pay.findMany({
     where: {
       created_at: {
-        gte: date_from || String(beginning),
+        gte: date_from || String(startMilliseconds),
         lt: date_to || String(endMilliseconds)
       },
     },
@@ -260,6 +256,9 @@ router.get("/auxiliary/data", async (req, res) => {
   }
 
   const cashAccount = await prisma.cash_accounts.findMany({
+    where: {
+      id_user: req.token.id
+    },
     include: {
       cash_accounts_balance: {
         include: {
@@ -269,7 +268,11 @@ router.get("/auxiliary/data", async (req, res) => {
     }
   });
 
-  const legalEntity = await prisma.legal_entites.findMany();
+  const legalEntity = await prisma.legal_entites.findMany({
+    where: {
+      id_user: req.token.id
+    },
+  });
   const currency = await prisma.currency.findMany();
 
   const data = {
@@ -279,7 +282,11 @@ router.get("/auxiliary/data", async (req, res) => {
   };
 
   if (type) {
-    const itemList = await prisma[types[type]].findMany();
+    const itemList = await prisma[types[type]].findMany({
+      where: {
+        id_user: req.token.id
+      },
+    });
     data.items = itemList
   }
 
