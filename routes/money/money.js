@@ -10,11 +10,32 @@ const router = express.Router();
 
 
 router.get("/", (req, res) => {
-  const { search, reqPage, reqLimit, orderBy } = req.query
+  const { search, dateFrom, dateTo, reqPage, reqLimit, orderBy } = req.query
   const page = Number(reqPage) || 1;
   const limit = Number(reqLimit) || 25;
 
+  const dateSearch = search
+    ? {
+      created_at: {
+        gte: dateFrom || '',
+        lt:  dateTo || ''
+      },
+    }
+    : {}
+
+  const searchData = search
+    ? {
+      OR: [
+        { note: { contains: search } },
+      ],
+    }
+    : {}
+
   prisma.pay.findMany({
+    where: {
+     ...dateSearch,
+      ...searchData,
+    },
     skip: limit * (page - 1),
     take: limit,
     orderBy: {
@@ -28,7 +49,7 @@ router.get("/", (req, res) => {
       },
       cash_account: {
         include: {
-          user_currency: true
+          cash_accounts_balance: true
         }
       },
       legal_entity: true,
@@ -69,6 +90,10 @@ router.post("/add", async(req, res) => {
     updated_at: dateMs
   }
 
+  if(req.body.created_at === "NaN") {
+    data.created_at = dateMs
+  }
+
   try {
     const pay = await prisma.pay.create({ data: data })
     if(payList && payList.length > 0) {
@@ -81,7 +106,7 @@ router.post("/add", async(req, res) => {
           updated_at: dateMs
         })
       });
-      await prisma.payType.createMany({
+      await prisma.pay_type.createMany({
         data: subData,
         skipDuplicates: false,
       })
@@ -109,7 +134,11 @@ router.get("/:id", (req, res) => {
       },
       cash_account: {
         include: {
-          user_currency: true
+          cash_accounts_balance: {
+            include: {
+              currency: true
+            }
+          },
         }
       },
       legal_entity: true,
@@ -129,7 +158,7 @@ router.get("/:id", (req, res) => {
 
 router.post("/:id/edit", async (req, res) => {
   const id = Number(req.params.id)
-  await prisma.payType.deleteMany({ where: { pay_id: id } })
+  await prisma.pay_type.deleteMany({ where: { pay_id: id } })
 
   const dateMs = String(Date.now());
 
@@ -163,7 +192,7 @@ router.post("/:id/edit", async (req, res) => {
           updated_at: dateMs
         })
       });
-      await prisma.payType.createMany({
+      await prisma.pay_type.createMany({
         data: subData,
         skipDuplicates: false,
       })
@@ -187,18 +216,26 @@ router.get("/auxiliary/data", async (req, res) => {
 
   const type = req.query.type
   const types = {
-    pay_supplier: "supplier",
-    pay_customer: "client",
+    pay_supplier: "suppliers",
+    pay_customer: "clients",
     pay_expend: "expenditure",
 
-    receive_income: "incomeItem",
-    receive_customer: "client",
-    receive_supplier: "supplier"
+    receive_income: "income_items",
+    receive_customer: "clients",
+    receive_supplier: "suppliers"
   }
 
-  const cashAccount = await prisma.cashAccount.findMany();
+  const cashAccount = await prisma.cash_accounts.findMany({
+    include: {
+      cash_accounts_balance: {
+        include: {
+          currency: true
+        }
+      },
+    }
+  });
 
-  const legalEntity = await prisma.legalEntity.findMany();
+  const legalEntity = await prisma.legal_entites.findMany();
   const currency = await prisma.currency.findMany();
 
   const data = {
