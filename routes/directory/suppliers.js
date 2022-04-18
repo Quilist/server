@@ -40,6 +40,9 @@ router.post("/add", async (req, res) => {
         edrpou,
         nds,
         code_nds,
+        mail,
+        address,
+        note: notes,
         created_at: dateMs,
         updated_at: dateMs
     }
