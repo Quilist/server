@@ -39,7 +39,7 @@ router.get("/", (req, res) => {
     skip: limit * (page - 1),
     take: limit,
     orderBy: {
-      id: orderBy || 'desc',
+      created_at: orderBy || 'desc',
     },
     include: {
       payments:  {
@@ -57,10 +57,34 @@ router.get("/", (req, res) => {
   })
     .then(async (result) => {
       const total = await prisma.pay.count();
+      const type = req.query.type
+      const types = {
+        pay_supplier: "suppliers",
+        pay_customer: "clients",
+        pay_expend: "expenditure",
+
+        receive_income: "income_items",
+        receive_customer: "clients",
+        receive_supplier: "suppliers"
+      }
+
+      const resultData = await Promise.all(result.map(async elem => {
+        if(elem.type) {
+          const typeItem = await prisma[types[elem.type]].findUnique({
+            where: {
+              id: Number(elem.type_id)
+            }
+          });
+          if(typeItem) {
+            elem.type_item = typeItem
+          }
+          return elem;
+        }
+      }));
 
       res.json({
         status: "OK", message: {
-          items: result,
+          items: resultData,
           paginations: {
             total: total,
             last_page: total <= limit ? 1 : total / limit
@@ -170,7 +194,10 @@ router.post("/:id/edit", async (req, res) => {
   delete req.body.payments;
   delete req.body.changes;
   delete req.body.totals;
-  delete req.body.created_at;
+
+  if(req.body.created_at === "NaN") {
+    delete req.body.created_at;
+  }
 
   const data = {
     ...req.body,
