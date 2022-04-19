@@ -303,6 +303,8 @@ model suppliers {
   mail       String?
   mobile     String?
   company    String?
+  discount   String?
+  duty       String?
   edrpou     String?
   address    String?
   code_nds   String?
