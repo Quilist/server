@@ -43,7 +43,7 @@ class authController {
          * Ссылка действует час.
          */
         try {
-            const data = await authService.activation(req.query.code, req.ip);
+            const data = await authService.activation(req.query.code || "", req.ip);
 
             res.cookie("token", data, { httpOnly: false, domain: "b-fin.tech" })
             return res.redirect(`${config.SiteLink}/dashboard`);
@@ -70,7 +70,7 @@ class authController {
                 return res.json({ status: "error", message: "Nav.Registration, ValidationError" });
             }
 
-            await authService.changePassword(password, code);
+            await authService.changePassword(password, code || "");
 
             return res.json({ status: "OK", message: "Nav.RestoreForm, ChangePassword" });
         } catch (e) {

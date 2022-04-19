@@ -24,7 +24,7 @@ class itemsController {
 
     async delete(req, res, next) {
         try {
-            await itemsService.delete(req.originalUrl.split("/")[1], Number(req.params.id))
+            await itemsService.delete(req.originalUrl.split("/")[1], Number(req.params.id));
 
             return res.json({ status: "OK", message: "Succes" });
         } catch (e) {

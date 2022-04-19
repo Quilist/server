@@ -39,7 +39,7 @@ router.post("/add", (req, res) => {
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
 
     for (let i = 0; i < mobile.length; i++) {
-        if (mobile[i].length !== 10) {
+        if (mobile[i].length !== 10 || mobile[i].length !== 0) {
             return res.json({ status: "error", message: "incorrect phone" });
         }
     }
@@ -88,7 +88,7 @@ router.post("/:id/edit", (req, res) => {
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
 
     for (let i = 0; i < mobile.length; i++) {
-        if (mobile[i].length !== 10) {
+        if (mobile[i].length !== 10 || mobile[i].length !== 0) {
             return res.json({ status: "error", message: "incorrect phone" });
         }
     }

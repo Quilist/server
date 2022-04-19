@@ -3,16 +3,16 @@ const prisma = require("../../database/database");
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  const { search, date_from, date_to, page, limit, orderBy } = req.query;
+  const { search, dateFrom, dateTo, reqPage, reqLimit, orderBy } = req.query;
   
-  const pageParam = Number(page) || 1;
-  const limitParam = Number(limit) || 25;
+  const page = Number(reqPage) || 1;
+  const limit = Number(reqLimit) || 25;
 
   const dateSearch = search
     ? {
       created_at: {
-        gte: date_from || '',
-        lt: date_to || ''
+        gte: dateFrom || '',
+        lt: dateTo || ''
       },
     }
     : {}
@@ -25,18 +25,13 @@ router.get("/", (req, res) => {
     }
     : {}
 
-  const startMilliseconds = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
-  const endMilliseconds = new Date(new Date().setHours(23, 59, 59, 999)).getTime();
-
   prisma.pay.findMany({
     where: {
-      created_at: {
-        gte: date_from || String(startMilliseconds),
-        lt: date_to || String(endMilliseconds)
-      },
+      ...dateSearch,
+      ...searchData,
     },
-    skip: limitParam * (pageParam - 1),
-    take: limitParam,
+    skip: limit * (page - 1),
+    take: limit,
     orderBy: {
       created_at: orderBy || 'desc',
     },
@@ -86,7 +81,7 @@ router.get("/", (req, res) => {
           items: resultData,
           paginations: {
             total: total,
-            last_page: total <= limitParam ? 1 : total / limitParam
+            last_page: total <= limit ? 1 : total / limit
           }
         }
       });
@@ -256,9 +251,6 @@ router.get("/auxiliary/data", async (req, res) => {
   }
 
   const cashAccount = await prisma.cash_accounts.findMany({
-    where: {
-      id_user: req.token.id
-    },
     include: {
       cash_accounts_balance: {
         include: {
@@ -268,11 +260,7 @@ router.get("/auxiliary/data", async (req, res) => {
     }
   });
 
-  const legalEntity = await prisma.legal_entites.findMany({
-    where: {
-      id_user: req.token.id
-    },
-  });
+  const legalEntity = await prisma.legal_entites.findMany();
   const currency = await prisma.currency.findMany();
 
   const data = {
@@ -282,14 +270,9 @@ router.get("/auxiliary/data", async (req, res) => {
   };
 
   if (type) {
-    const itemList = await prisma[types[type]].findMany({
-      where: {
-        id_user: req.token.id
-      },
-    });
+    const itemList = await prisma[types[type]].findMany();
     data.items = itemList
   }
-
 
   Promise.all([data])
     .then(elem => {

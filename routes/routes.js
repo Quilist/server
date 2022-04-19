@@ -11,11 +11,11 @@ const googleAuthRouter = require("./auth/oauth/google");
 const facebookAuthRouter = require("./auth/oauth/facebook");
 
 const clientsRouter = require("./clients/clients");
-const payRouter = require("./pay/pay");
 
 const cashAccountRouter = require("./directory/cash_and_accounts");
 const moneyRouter = require("./money/money");
 const productRouter = require("./product/product");
+
 /*
  * Роуты.
  *
@@ -45,7 +45,6 @@ router.use("/auth/facebook", facebookAuthRouter);
 router.use(utils.isTokenValid);
 
 router.use("/clients", clientsRouter);
-router.use("/pay", payRouter);
 
 fs.readdir('./routes/directory', (err, files) => {
     files.forEach(elem => {

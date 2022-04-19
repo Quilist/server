@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const ApiError = require("../exceptions/error");
 
 const config = require("../config.json");
 
@@ -67,9 +68,10 @@ function authToken(email, ip, id) {
      * Создание токена.
      */
     return objectSign({
-        email: email,
-        ip: ip,
-        id: id,
+        email,
+        ip,
+        id,
+        id_role,
         exp: Date.now() + 43200000
     });
 }
@@ -86,45 +88,38 @@ function verificationCode(username, email, password) {
     });
 }
 
-function restorationCode(email) {
-    /*
-     * Создание кода для восстановления.
-     */
-    return objectSign({
-        email: email,
-        exp: Date.now() + 3600000
-    });
-}
-
 function isTokenValid(req, res, next) {
     /*
      * Валидация токена, и его добавление в запрос 
      * для дальнейшего более удобного использования.
      */
-    const token = validateObjectSign(req.cookies.token);
+    try {
+        const token = validateObjectSign(req.cookies.token);
 
-    if (!token) {
-        return res.json({ status: "error", message: "Invalid session" });
-    }
-
-    const tokenKeys = Object.keys(token);
-    const validateKeys = ["email", "id", "ip", "exp"];
-
-    for (const key in validateKeys) {
-        if (!tokenKeys[key]) {
-            return res.json({ status: "error", message: "Invalid session" });
+        if (!token) {
+            throw ApiError.sessionError();
         }
-    }
 
-    req.token = token;
-    next();
+        const tokenKeys = Object.keys(token);
+        const validateKeys = ["email", "id", "ip", "exp", "id_role"];
+
+        for (let i = 0; i < validateKeys.length; i++) {
+            if (!tokenKeys[validateKeys[i]]) {
+                throw ApiError.sessionError();
+            }
+        }
+
+        req.token = token;
+        next();
+    } catch (e) {
+        next(e);
+    }
 }
 
 module.exports = {
     stringHash,
     authToken,
     verificationCode,
-    restorationCode,
     validateObjectSign,
     isTokenValid
 }
