@@ -16,10 +16,10 @@ class itemsService {
     }
 
     async edit(table, data, id) {
-        const data = await prisma[table].findUnique({ where: { id: id } });
+        const record = await prisma[table].findUnique({ where: { id: id } });
 
         // проверка на пренадлежность клиента к пользователю
-        if (data?.id_user !== token.id) {
+        if (record?.id_user !== token.id) {
             throw apiError.unathorizedError();
         }
 
