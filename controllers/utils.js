@@ -63,7 +63,7 @@ function validateObjectSign(encodedObject) {
     }
 }
 
-function authToken(email, ip, id) {
+function authToken(email, ip, id, id_role) {
     /*
      * Создание токена.
      */
