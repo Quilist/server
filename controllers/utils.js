@@ -68,10 +68,10 @@ function authToken(email, ip, id, id_role) {
      * Создание токена.
      */
     return objectSign({
-        email,
-        ip,
-        id,
-        id_role,
+        email: email,
+        ip: ip,
+        id: id,
+        id_role: id_role,
         exp: Date.now() + 43200000
     });
 }
