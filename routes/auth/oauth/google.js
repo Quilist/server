@@ -52,11 +52,13 @@ const oAuthCallback = async (req, res) => {
                     })
                     .catch(err => res.json({ status: "error", message: err.message }));
             } else {
-                if (result[0].pass !== password) return res.json({ status: "error", message: "Nav.Authn, LoginError" });
+                if (result[0].pass !== password) return res.json({ status: "error", message: "Nav.Auth, LoginError" });
 
                 if (!result[0].google) await prisma.user.update({ data: { google: req.user.raw, updated_at: String(Date.now()) }, where: { e_mail: email } })
 
                 const authToken = utils.authToken(email, req.ip, result[0].id, "Админ");
+
+                console.log(authToken)
 
                 res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
                 res.redirect(`${config.SiteLink}/dashboard`);
