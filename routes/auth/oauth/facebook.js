@@ -46,7 +46,7 @@ const oAuthCallback = async (req, res) => {
                     }
                 })
                     .then(result => {
-                        const authToken = utils.authToken(email, req.ip, result.id);
+                        const authToken = utils.authToken(email, req.ip, result.id, "Админ");
 
                         res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
                         res.redirect(`${config.SiteLink}/dashboard`);
@@ -57,7 +57,7 @@ const oAuthCallback = async (req, res) => {
 
                 if (!result[0].facebook) await prisma.user.update({ data: { facebook: req.user.raw, updated_at: String(Date.now()) }, where: { e_mail: email } });
 
-                const authToken = utils.authToken(email, req.ip, result[0].id);
+                const authToken = utils.authToken(email, req.ip, result[0].id, "Админ");
 
                 res.cookie("token", authToken, { httpOnly: false, domain: "b-fin.tech" });
                 res.redirect(`${config.SiteLink}/dashboard`);
