@@ -67,7 +67,7 @@ model banks_details {
   id               Int             @id @default(autoincrement())
   user             User?           @relation(fields: [id_user], references: [id])
   id_user          Int
-  bank_name        String          @unique
+  bank_name        String
   MFO              String?
   checking_account String?
   created_at       String
@@ -79,7 +79,7 @@ model expenditure {
   id         Int    @id @default(autoincrement())
   user       User?  @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String @unique
+  name       String
   created_at String
   updated_at String
 }
@@ -88,7 +88,7 @@ model income_items {
   id         Int    @id @default(autoincrement())
   user       User?  @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String @unique
+  name       String
   created_at String
   updated_at String
 }
@@ -97,7 +97,7 @@ model measure {
   id         Int        @id @default(autoincrement())
   user       User?      @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String     @unique
+  name       String
   created_at String
   updated_at String
   products   products[]
@@ -107,7 +107,7 @@ model storehouse {
   id         Int    @id @default(autoincrement())
   user       User?  @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String @unique
+  name       String
   created_at String
   updated_at String
 }
@@ -116,7 +116,7 @@ model type_price {
   id         Int    @id @default(autoincrement())
   user       User?  @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String @unique
+  name       String
   created_at String
   updated_at String
 }
@@ -225,8 +225,8 @@ model employees {
   f_name         String?
   s_name         String?
   mobile         String?
-  password       String
-  mail           String
+  pass           String
+  e_mail         String         @unique
   id_role        String?
   cash_acc       cash_accounts? @relation(fields: [cash_acc_id], references: [id])
   cash_acc_id    Int
@@ -335,7 +335,7 @@ model products_groups {
   id         Int        @id @default(autoincrement())
   user       User?      @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String     @unique
+  name       String
   created_at String
   updated_at String
   products   products[]
