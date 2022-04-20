@@ -104,21 +104,21 @@ router.post("/:id/remove", (req, res) => {
 router.get("/auxiliary/data", async (req, res) => {
 
   const typeList = [{ name: 'Товар', value: 'product' }, { name: 'Комплект', value: 'set' }, { name: 'Услуга', value: 'service' }];
-  const storehouse = await prisma.storehouse.findMany();
-  const typePrice = await prisma.type_price.findMany();
-  const measure = await prisma.measure.findMany();
-  const supplier = await prisma.suppliers.findMany();
-  const group = await prisma.products_groups.findMany();
-  const currency = await prisma.currency.findMany();
+
+  const tables = ["storehouse", "type_price", "measure", "suppliers", "products_groups", "currency"];
+
+  const promises = tables.map(elem => {
+    return await prisma[elem].findMany({ where: { id_user: Number(req.token.id) } });
+  });
 
   const data = {
-    storehouses: storehouse,
-    type_prices: typePrice,
-    measures: measure,
-    suppliers: supplier,
-    groups: group,
+    storehouses: promises[0],
+    type_prices: promises[1],
+    measures: promises[2],
+    suppliers: promises[3],
+    groups: promises[4],
     types: typeList,
-    currencies: currency
+    currencies: promises[5]
   };
 
   Promise.all([data])
