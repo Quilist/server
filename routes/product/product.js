@@ -111,9 +111,9 @@ router.get("/auxiliary/data", async (req, res) => {
     return await prisma[elem].findMany({ where: { id_user: Number(req.token.id) } });
   });
 
-  Promise.all([promises])
+  Promise.all(promises)
     .then(elem => {
-      console.log(elem)
+ 
       const data = {
         storehouses: elem[0],
         type_prices: elem[1],
