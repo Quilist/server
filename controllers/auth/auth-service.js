@@ -38,7 +38,7 @@ class UserService {
                 throw ApiError.badRequest("Nav.Authn, LoginError");
             }
 
-            return utils.authToken(email, ip, data[0].id, "Админ");
+            return utils.authToken(email, ip, data.id, "Админ");
         } else { // Иначе ищем запись в сотрудниках
             const employee = await prisma.employees.findUnique({ where: { mail: email } })
 
@@ -46,7 +46,7 @@ class UserService {
                 throw ApiError.badRequest("Nav.Authn, LoginError");
             }
 
-            return utils.authToken(mail, ip, data[0].id, employee.id_role);
+            return utils.authToken(mail, ip, data.id, employee.id_role);
         }
     }
 
@@ -75,7 +75,7 @@ class UserService {
             }
         });
 
-        return utils.authToken(email, ip, data.id)
+        return utils.authToken(email, ip, data.id, "Админ")
     }
 
     async restoration(email) {
