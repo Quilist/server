@@ -15,7 +15,7 @@ class itemsService {
         return await prisma[table].create({ data: options });
     }
 
-    async edit(table, data, id) {
+    async edit(table, data, id, token) {
         const record = await prisma[table].findUnique({ where: { id: id } });
 
         // проверка на пренадлежность клиента к пользователю
@@ -33,7 +33,7 @@ class itemsService {
         return await prisma[table].update({ data: options, where: { id: id } });
     }
 
-    async delete(table, id) {
+    async delete(table, id, token) {
         const data = await prisma[table].findUnique({ where: { id: id } });
 
         // проверка на пренадлежность клиента к пользователю
