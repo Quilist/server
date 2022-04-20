@@ -93,26 +93,22 @@ function isTokenValid(req, res, next) {
      * Валидация токена, и его добавление в запрос 
      * для дальнейшего более удобного использования.
      */
-    try {
-        const token = validateObjectSign(req.cookies.token);
+    const token = validateObjectSign(req.cookies.token);
 
-        if (!token) {
-            throw ApiError.sessionError();
-        }
-
-        const validateKeys = ["email", "id", "ip", "exp", "id_role"];
-
-        for (let i = 0; i < validateKeys.length; i++) {
-            if (!token[validateKeys[i]]) {
-                throw ApiError.sessionError();
-            }
-        }
-
-        req.token = token;
-        next();
-    } catch (e) {
-        next(e);
+    if (!token) {
+        return res.json({ status: "error", message: "Invalid session" });
     }
+
+    const validateKeys = ["email", "id", "ip", "exp", "id_role"];
+
+    for (let i = 0; i < validateKeys.length; i++) {
+        if (!token[validateKeys[i]]) {
+            return res.json({ status: "error", message: "Invalid session" });
+        }
+    }
+
+    req.token = token;
+    next();
 }
 
 module.exports = {
