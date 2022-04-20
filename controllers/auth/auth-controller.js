@@ -25,6 +25,7 @@ class authController {
             const { email, password } = req.body;
 
             const data = await authService.login(email, password, req.ip);
+            console.log(data)
 
             res.cookie("token", data, { httpOnly: false, domain: "b-fin.tech" });
             return res.redirect(`${config.SiteLink}/dashboard`);
