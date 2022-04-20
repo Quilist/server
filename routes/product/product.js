@@ -113,7 +113,7 @@ router.get("/auxiliary/data", async (req, res) => {
 
   Promise.all([promises])
     .then(elem => {
-      
+      console.log(elem)
       const data = {
         storehouses: elem[0],
         type_prices: elem[1],
