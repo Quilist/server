@@ -8,6 +8,7 @@ class itemsController {
 
             return res.json({ status: "OK", message: "Succes" });
         } catch (e) {
+            console.log(e.message)
             next(e)
         }
     }
