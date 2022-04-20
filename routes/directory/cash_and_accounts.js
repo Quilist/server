@@ -4,7 +4,7 @@ const prisma = require("../../database/database");
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  const { search, reqPage, reqLimit, orderBy } = req.query
+  const { reqPage, reqLimit, orderBy } = req.query
   const page = Number(reqPage) || 1;
   const limit = Number(reqLimit) || 25;
 
@@ -17,6 +17,7 @@ router.get("/", (req, res) => {
     include: {
       cash_accounts_balance: true,
     },
+    where: { id_user: Number(req.token.id) }
   })
     .then(async (result) => {
       const total = await prisma.cash_accounts.count();
@@ -31,7 +32,7 @@ router.get("/", (req, res) => {
         }
       });
     })
-    .catch(err => res.json({ status: "error", message: err.message }));
+    .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 router.post("/add", async (req, res) => {
@@ -49,48 +50,35 @@ router.post("/add", async (req, res) => {
   }
 
   try {
-    const cashAccount = await prisma.cash_accounts.create({ data: data })
-    if (balanceList && balanceList.length > 0) {
-      let subData = [];
-      balanceList.forEach(function (item) {
-        subData.push({
-          ...item,
+    const cashAccount = await prisma.cash_accounts.create({ data: data });
+
+    if (balanceList.length) {
+
+      const subData = balanceList.map(elem => {
+        return {
+          ...elem,
           cash_account_id: cashAccount.id
-        })
+        }
       });
-      await prisma.cash_accounts_balance.createMany({
-        data: subData,
-        skipDuplicates: false,
-      })
+
+      await prisma.cash_accounts_balance.createMany({ data: subData, skipDuplicates: false })
     }
 
-    res.json({
-      status: "OK",
-      message: "Success"
-    })
+    res.json({ status: "OK", message: "Success" });
   } catch (e) {
-    console.log(e)
-    throw e
+    res.json({ status: "error", message: e.message });
   }
 });
 
 router.get("/auxiliary/data", async (req, res) => {
-  const currency = await prisma.currency.findMany();
+  const currency = await prisma.currency.findMany({ where: { id_user: Number(req.token.id) } });
   const typeList = [{ name: 'Касса(наличные)', value: 'cash' }, { name: 'Счет(безналичные)', value: 'account' }];
 
-  const data = {
-    currencies: currency,
-    types: typeList
-  };
+  const data = { currencies: currency, types: typeList };
 
   Promise.all([data])
-    .then(elem => {
-      res.json({
-        status: "OK", message: data
-      });
-    })
-    .catch(({ message }) => res.json({ status: "error", message }));
-
+    .then(elem => { res.json({ status: "OK", message: elem }) })
+    .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 module.exports = router;
