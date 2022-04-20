@@ -111,18 +111,19 @@ router.get("/auxiliary/data", async (req, res) => {
     return await prisma[elem].findMany({ where: { id_user: Number(req.token.id) } });
   });
 
-  const data = {
-    storehouses: promises[0],
-    type_prices: promises[1],
-    measures: promises[2],
-    suppliers: promises[3],
-    groups: promises[4],
-    types: typeList,
-    currencies: promises[5]
-  };
-
-  Promise.all([data])
+  Promise.all([promises])
     .then(elem => {
+      
+      const data = {
+        storehouses: elem[0],
+        type_prices: elem[1],
+        measures: elem[2],
+        suppliers: elem[3],
+        groups: elem[4],
+        types: typeList,
+        currencies: elem[5]
+      };
+
       res.json({
         status: "OK", message: data
       });
