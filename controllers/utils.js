@@ -100,11 +100,10 @@ function isTokenValid(req, res, next) {
             throw ApiError.sessionError();
         }
 
-        const tokenKeys = Object.keys(token);
         const validateKeys = ["email", "id", "ip", "exp", "id_role"];
 
         for (let i = 0; i < validateKeys.length; i++) {
-            if (!tokenKeys[validateKeys[i]]) {
+            if (!token[validateKeys[i]]) {
                 throw ApiError.sessionError();
             }
         }
