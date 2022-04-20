@@ -4,27 +4,27 @@ const router = express.Router();
 const prisma = require("../../database/database");
 
 router.get("/", (req, res) => {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 25;
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 25;
 
-    prisma.products.findMany({ skip: limit * (page - 1), take: limit })
-        .then(async (result) => {
-            const total = await prisma.products.count();
+  prisma.products.findMany({ skip: limit * (page - 1), take: limit, where: { id_user: Number(req.token.id) } })
+    .then(async (result) => {
+      const total = await prisma.products.count();
 
-            res.json({
-                status: "OK", message: {
-                    items: result,
-                    paginations: {
-                        total: total,
-                        last_page: total <= limit ? 1 : total / limit
-                    }
-                }
-            });
-        })
-        .catch(err => res.json({ status: "error", message: err.message }));
+      res.json({
+        status: "OK", message: {
+          items: result,
+          paginations: {
+            total: total,
+            last_page: total <= limit ? 1 : total / limit
+          }
+        }
+      });
+    })
+    .catch(err => res.json({ status: "error", message: err.message }));
 });
 
-router.post("/add", async(req, res) => {
+router.post("/add", async (req, res) => {
   const dateMs = String(Date.now());
 
   const amountData = req.body.amount_data;
@@ -39,7 +39,7 @@ router.post("/add", async(req, res) => {
 
   try {
     const product = await prisma.products.create({ data: data })
-    if(amountData && amountData.length > 0) {
+    if (amountData && amountData.length > 0) {
       let subData = [];
       amountData.forEach(function (item) {
         subData.push({
@@ -55,8 +55,10 @@ router.post("/add", async(req, res) => {
       })
     }
 
-    res.json({ status: "OK",
-      message: "Success"})
+    res.json({
+      status: "OK",
+      message: "Success"
+    })
   } catch (e) {
     console.log(e)
     throw e
@@ -66,42 +68,42 @@ router.post("/add", async(req, res) => {
 
 router.get("/:id", (req, res) => {
 
-    prisma.products.findUnique({ where: { id: Number(req.params.id) } })
-        .then((result) => {
-            if (!result) return res.json({ status: "error", message: "Unknown id" });
+  prisma.products.findUnique({ where: { id: Number(req.params.id) } })
+    .then((result) => {
+      if (!result) return res.json({ status: "error", message: "Unknown id" });
 
-            if (result.id_user !== req.token.id) {
-                return res.json({ status: "error", message: "Action not allowed" });
-            }
+      if (result.id_user !== req.token.id) {
+        return res.json({ status: "error", message: "Action not allowed" });
+      }
 
-            res.json({ status: "OK", message: result });
-        })
-        .catch(err => res.json({ status: "error", message: err.message }));
+      res.json({ status: "OK", message: result });
+    })
+    .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 
 router.post("/:id/edit", (req, res) => {
-    const dateMs = String(Date.now());
+  const dateMs = String(Date.now());
 
-    const data = {
-        ...req.body,
-        updated_at: dateMs
-    }
+  const data = {
+    ...req.body,
+    updated_at: dateMs
+  }
 
-    prisma.products.update({ data: { ...data }, where: { id: Number(req.params.id) } })
-        .then(() => res.json({ status: "OK", message: "Succes" }))
-        .catch(err => res.json({ status: "error", message: err.message }));
+  prisma.products.update({ data: { ...data }, where: { id: Number(req.params.id) } })
+    .then(() => res.json({ status: "OK", message: "Succes" }))
+    .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 router.post("/:id/remove", (req, res) => {
-    prisma.products.delete({ where: { id: Number(req.params.id) } })
-        .then(() => res.json({ status: "OK", message: "Succes" }))
-        .catch(err => res.json({ status: "error", message: err.message }));
+  prisma.products.delete({ where: { id: Number(req.params.id) } })
+    .then(() => res.json({ status: "OK", message: "Succes" }))
+    .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 router.get("/auxiliary/data", async (req, res) => {
 
-  const typeList = [{name: 'Товар', value: 'product'}, {name: 'Комплект', value: 'set'}, {name: 'Услуга', value: 'service'}];
+  const typeList = [{ name: 'Товар', value: 'product' }, { name: 'Комплект', value: 'set' }, { name: 'Услуга', value: 'service' }];
   const storehouse = await prisma.storehouse.findMany();
   const typePrice = await prisma.type_price.findMany();
   const measure = await prisma.measure.findMany();
@@ -119,7 +121,7 @@ router.get("/auxiliary/data", async (req, res) => {
     currencies: currency
   };
 
-    Promise.all([data])
+  Promise.all([data])
     .then(elem => {
       res.json({
         status: "OK", message: data

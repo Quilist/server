@@ -31,23 +31,21 @@ class UserService {
     async login(email, password, ip) {
         if (!email || !password) throw ApiError.badRequest("Nav.Authn, ValidationError");
 
-        const data = await prisma.user.findUnique({ where: { e_mail: email } })
+        let data = await prisma.user.findUnique({ where: { e_mail: email } });
         // если найдена запись то логинимся как админ
         if (data) {
             if (data?.pass !== utils.stringHash(password)) {
                 throw ApiError.badRequest("Nav.Authn, LoginError");
             }
-
-            return utils.authToken(email, ip, data.id, "Админ");
         } else { // Иначе ищем запись в сотрудниках
-            const employee = await prisma.employees.findUnique({ where: { mail: email } })
+            data = await prisma.employees.findUnique({ where: { e_mail: email } })
 
-            if (employee?.password !== utils.stringHash(password)) {
+            if (employee?.pass !== utils.stringHash(password)) {
                 throw ApiError.badRequest("Nav.Authn, LoginError");
             }
-
-            return utils.authToken(mail, ip, data.id, employee.id_role);
         }
+
+        return utils.authToken(email, ip, data.id, data.id_role || "Админ");
     }
 
     async activation(code, ip) {
