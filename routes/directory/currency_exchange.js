@@ -11,7 +11,9 @@ router.get("/", async (req, res) => {
     const limit = Number(req.query.limit) || 25;
 
     itemsService.all(page, limit, "user_currencies", req.token)
-        .then(result => res.json({ status: "OK", message: result }))
+        .then(result => {
+            console.log(result)
+            res.json({ status: "OK", message: result })})
         .catch(e => res.json({ status: "error", message: e.message }));
 });
 
@@ -77,13 +79,8 @@ router.post("/add", async (req, res) => {
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
-// получение currencies по айди
 router.get("/:id", itemsController.id);
-
-// редактирование currencies
 router.post("/:id/edit", itemsController.edit);
-
-// Удаление currencies
 router.post("/:id/remove", itemsController.delete);
 
 module.exports = router;
