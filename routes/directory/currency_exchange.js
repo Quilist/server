@@ -11,9 +11,7 @@ router.get("/", async (req, res) => {
     const limit = Number(req.query.limit) || 25;
 
     itemsService.all(page, limit, "user_currencies", req.token)
-        .then(result => {
-            console.log(result)
-            res.json({ status: "OK", message: result })})
+        .then(result => res.json({ status: "OK", message: result }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
 
