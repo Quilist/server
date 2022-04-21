@@ -56,9 +56,22 @@ router.post("/add", async (req, res) => {
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
-router.get("/:id", itemsController.id);
-router.post("/:id/edit", itemsController.edit);
-router.post("/:id/remove", itemsController.delete);
+router.get("/:id", (req, res) => {
+    itemsService.id("user_currencies", req.params.id, token.id)
+        .then(result => res.json({ status: "OK", message: result }))
+        .catch(e => res.json({ status: "error", message: e.message }));
+});
+
+router.post("/:id/edit", (req, res) => {
+    itemsService.edit("user_currencies", ...req.body, req.params.id, token.id)
+        .then(result => res.json({ status: "OK", message: result }))
+        .catch(e => res.json({ status: "error", message: e.message }));
+});
+router.post("/:id/remove", (req, res) => {
+    itemsService.delete("user_currencies", req.params.id, token.id)
+        .then(result => res.json({ status: "OK", message: result }))
+        .catch(e => res.json({ status: "error", message: e.message }));
+});
 
 module.exports = router;
 
