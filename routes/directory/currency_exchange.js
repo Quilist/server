@@ -57,18 +57,18 @@ router.post("/add", async (req, res) => {
 });
 
 router.get("/:id", (req, res) => {
-    itemsService.id("user_currencies", req.params.id, token.id)
+    itemsService.id("user_currencies", Number(req.params.id), req.token)
         .then(result => res.json({ status: "OK", message: result }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 router.post("/:id/edit", (req, res) => {
-    itemsService.edit("user_currencies", ...req.body, req.params.id, token.id)
+    itemsService.edit("user_currencies", ...req.body, Number(req.params.id), req.token)
         .then(result => res.json({ status: "OK", message: result }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
 router.post("/:id/remove", (req, res) => {
-    itemsService.delete("user_currencies", req.params.id, token.id)
+    itemsService.delete("user_currencies", Number(req.params.id), req.token)
         .then(result => res.json({ status: "OK", message: result }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
