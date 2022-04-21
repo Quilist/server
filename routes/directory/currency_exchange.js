@@ -45,9 +45,9 @@ router.get("/auxiliary/data", async (req, res) => {
 
 // добавление currencies
 router.post("/add", async (req, res) => {
-    const { from_currencies_id, to_currencies_id } = req.body;
+    const { from_currency_id, to_currency_id } = req.body;
 
-    if (from_currencies_id === to_currencies_id) {
+    if (from_currency_id === to_currency_id) {
         return res.json({ status: "error", message: "Value one cannot be equal to value two" });
     }
 
