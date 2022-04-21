@@ -17,10 +17,10 @@ router.get("/", (req, res) => {
     include: {
       cash_accounts_balance: true,
     },
-    where: { id_user: Number(req.token.id) }
+    where: { id_user: req.token.id }
   })
     .then(async (result) => {
-      const total = await prisma.cash_accounts.count();
+      const total = await prisma.cash_accounts.count({ where: { id_user: req.token.id } });
 
       res.json({
         status: "OK", message: {
@@ -71,13 +71,12 @@ router.post("/add", async (req, res) => {
 });
 
 router.get("/auxiliary/data", async (req, res) => {
-  const currency = await prisma.currency.findMany({ where: { id_user: Number(req.token.id) } });
-  const typeList = [{ name: 'Касса(наличные)', value: 'cash' }, { name: 'Счет(безналичные)', value: 'account' }];
+  prisma.currency.findMany({ where: { id_user: req.token.id } })
+    .then(res => {
+      const typeList = [{ name: 'Касса(наличные)', value: 'cash' }, { name: 'Счет(безналичные)', value: 'account' }];
 
-  const data = { currencies: currency, types: typeList };
-
-  Promise.all([data])
-    .then(elem => { res.json({ status: "OK", message: elem[0] }) })
+      res.json({ status: "OK", message: { currencies: res, types: typeList } });
+    })
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 

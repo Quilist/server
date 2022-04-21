@@ -30,7 +30,7 @@ router.get("/", (req, res) => {
     where: {
       ...dateSearch,
       ...searchData,
-      id_user: Number(req.token.id)
+      id_user: req.token.id
     },
     skip: limit * (page - 1),
     take: limit,
@@ -254,12 +254,12 @@ router.get("/auxiliary/data", async (req, res) => {
       },
     },
     where: {
-      id_user: Number(req.token.id)
+      id_user: req.token.id
     }
   });
 
-  const legalEntity = await prisma.legal_entites.findMany({ where: { id_user: Number(req.token.id) } });
-  const currency = await prisma.currency.findMany({ where: { id_user: Number(req.token.id) } });
+  const legalEntity = await prisma.legal_entites.findMany({ where: { id_user: req.token.id } });
+  const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
 
   const data = {
     cash_accounts: cashAccount,
@@ -268,7 +268,7 @@ router.get("/auxiliary/data", async (req, res) => {
   };
 
   if (type) {
-    const itemList = await prisma[types[type]].findMany({ where: { id_user: Number(req.token.id) } });
+    const itemList = await prisma[types[type]].findMany({ where: { id_user: req.token.id } });
 
     data.items = itemList
   }

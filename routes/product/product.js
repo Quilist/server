@@ -52,7 +52,7 @@ router.get("/auxiliary/data", async (req, res) => {
   const tables = ["storehouse", "type_price", "measure", "suppliers", "products_groups", "currency"];
 
   const promises = tables.map(async (elem) => {
-    return await prisma[elem].findMany({ where: { id_user: Number(req.token.id) } });
+    return await prisma[elem].findMany({ where: { id_user: req.token.id } });
   });
 
   Promise.all(promises)

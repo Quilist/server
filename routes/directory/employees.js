@@ -30,10 +30,7 @@ router.post("/add", async (req, res) => {
     // отправка запроса
     prisma.employees.create({ data: options })
         .then(() => res.json({ status: "OK", message: "Succes" }))
-        .catch(err => {
-            console.log(err)
-            res.json({ status: "error", message: err.message })
-        });
+        .catch(err => res.json({ status: "error", message: err.message }));
 });
 
 // получение Employee по айди

@@ -11,12 +11,12 @@ router.get("/", async (req, res) => {
     const limit = Number(req.query.limit) || 25;
 
     itemsService.all(page, limit, "user_currencies")
-        .then((result) => res.json({ status: "OK", message: result }))
-        .catch(err => res.json({ status: "error", message: err.message }));
+        .then(res => res.json({ status: "OK", message: res }))
+        .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 // получение all_currencies
-router.get("/options", async (req, res) => {
+router.get("/auxiliary/data", async (req, res) => {
     const currency = [
         {
             id: 1,
@@ -51,7 +51,7 @@ router.post("/add", async (req, res) => {
         return res.json({ status: "error", message: "Value one cannot be equal to value two" });
     }
 
-    prisma.user_currencies.findAll({ where: { id_user: req.token.id } })
+    prisma.user_currencies.findMany({ where: { id_user: req.token.id } })
         .then(result => {
             // проверка на то, есть ли валютная пара с таким курсом
             const index = result.findIndex(el => {
@@ -65,13 +65,14 @@ router.post("/add", async (req, res) => {
 
             const options = {
                 ...req.body,
+                id_user: req.token.id,
                 created_at: dateMs,
                 updated_at: dateMs
             }
 
-            prisma.user_currencies.create({ data: { id_user: req.token.id, ...options } })
+            prisma.user_currencies.create({ data: options })
                 .then(() => res.json({ status: "OK", message: "Succes" }))
-                .catch(err => res.json({ status: "error", message: err.message }));
+                .catch(e => res.json({ status: "error", message: e.message }));
         })
         .catch(err => res.json({ status: "error", message: err.message }));
 });

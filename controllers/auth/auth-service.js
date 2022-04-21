@@ -40,7 +40,7 @@ class UserService {
         } else { // Иначе ищем запись в сотрудниках
             data = await prisma.employees.findUnique({ where: { e_mail: email } })
 
-            if (employee?.pass !== utils.stringHash(password)) {
+            if (data?.pass !== utils.stringHash(password)) {
                 throw ApiError.badRequest("Nav.Authn, LoginError");
             }
         }
