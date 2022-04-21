@@ -72,10 +72,10 @@ router.post("/add", async (req, res) => {
 
 router.get("/auxiliary/data", async (req, res) => {
   prisma.currency.findMany({ where: { id_user: req.token.id } })
-    .then(res => {
+    .then(result => {
       const typeList = [{ name: 'Касса(наличные)', value: 'cash' }, { name: 'Счет(безналичные)', value: 'account' }];
 
-      res.json({ status: "OK", message: { currencies: res, types: typeList } });
+      res.json({ status: "OK", message: { currencies: result, types: typeList } });
     })
     .catch(e => res.json({ status: "error", message: e.message }));
 });
