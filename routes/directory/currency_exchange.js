@@ -21,7 +21,7 @@ router.get("/auxiliary/data", async (req, res) => {
         {
             id: 1,
             name: "гривна",
-            represent: "uan"
+            represent: "uah"
         },
         {
             id: 2,
