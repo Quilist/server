@@ -55,8 +55,8 @@ router.post("/add", async (req, res) => {
         .then(result => {
             // проверка на то, есть ли валютная пара с таким курсом
             const index = result.findIndex(el => {
-                if (el.id_from_currencies === id_from_currencies &&
-                    el.id_to_currencies === id_to_currencies) return true;
+                if (el.from_currency_id === from_currency_id &&
+                    el.to_currency_id === to_currency_id) return true;
             });
 
             if (index !== -1) return res.json({ status: "error", message: "Currency pair already in use" });
