@@ -77,7 +77,7 @@ router.get("/auxiliary/data", async (req, res) => {
   const data = { currencies: currency, types: typeList };
 
   Promise.all([data])
-    .then(elem => { res.json({ status: "OK", message: elem }) })
+    .then(elem => { res.json({ status: "OK", message: elem[0] }) })
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 
