@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 25;
 
-    itemsService.all(page, limit, "user_currencies")
+    itemsService.all(page, limit, "user_currencies", req.token)
         .then(res => res.json({ status: "OK", message: res }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
