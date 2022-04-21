@@ -63,7 +63,7 @@ router.get("/:id", (req, res) => {
 });
 
 router.post("/:id/edit", (req, res) => {
-    itemsService.edit("user_currencies", ...req.body, Number(req.params.id), req.token)
+    itemsService.edit("user_currencies", req.body, Number(req.params.id), req.token)
         .then(result => res.json({ status: "OK", message: result }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
