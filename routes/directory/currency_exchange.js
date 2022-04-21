@@ -17,30 +17,9 @@ router.get("/", async (req, res) => {
 
 // получение all_currencies
 router.get("/auxiliary/data", async (req, res) => {
-    const currency = [
-        {
-            id: 1,
-            name: "гривна",
-            represent: "uah"
-        },
-        {
-            id: 2,
-            name: "швейцарский франк",
-            represent: "chf"
-        },
-        {
-            id: 3,
-            name: "доллар",
-            represent: "usd"
-        },
-        {
-            id: 4,
-            name: "евро",
-            represent: "eur"
-        },
-    ];
-
-    res.json({ status: "OK", message: currency });
+    prisma.currency.findMany({ where: { id_user: req.token.id } })
+        .then(result => res.json({ status: "OK", message: result }))
+        .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 // добавление currencies
