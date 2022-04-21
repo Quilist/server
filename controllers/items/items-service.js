@@ -48,7 +48,7 @@ class itemsService {
 
         const data = await prisma[table].findMany({ skip: limit * (page - 1), take: limit, where: { id_user: token.id } })
         const total = await prisma[table].count({ where: { id_user: token.id } });
-        console.log(total)
+
         return {
             items: data,
             paginations: {
