@@ -16,6 +16,7 @@ router.get("/", (req, res) => {
     },
     include: {
       cash_accounts_balance: true,
+      CurrencyExchange: true
     },
     where: { id_user: req.token.id }
   })
