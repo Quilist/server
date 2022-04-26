@@ -82,12 +82,12 @@ router.get("/auxiliary/data", async (req, res) => {
 
 // router.get("/:id")
 router.post("/:id/remove", async (req, res) => {
-  const cashAccounts = await prisma.cash_accounts.delete({ where: { id: Number(req.params.id) } });
   const cashBalance = await prisma.cash_accounts_balance.delete({ where: { cash_account_id: Number(req.params.id) } });
+  const cashAccounts = await prisma.cash_accounts.delete({ where: { id: Number(req.params.id) } });
 
-  Promise.all([cashAccounts, cashBalance])
+  Promise.all([cashBalance, cashAccounts])
     .then(() => res.json({ status: "OK", message: "Succes" }))
-    .catch(err => res.json({ status: "error", message: err.message }));
+    .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 // router.post("/:id/edit")
