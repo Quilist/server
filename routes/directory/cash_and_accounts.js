@@ -16,7 +16,6 @@ router.get("/", (req, res) => {
     },
     include: {
       cash_accounts_balance: true,
-      CurrencyExchange: true
     },
     where: { id_user: req.token.id }
   })
@@ -80,5 +79,14 @@ router.get("/auxiliary/data", async (req, res) => {
     })
     .catch(e => res.json({ status: "error", message: e.message }));
 });
+
+// router.get("/:id")
+router.post("/:id/remove", (req, res) => {
+  prisma.cash_accounts.delete({ where: { id: Number(req.params.id) } })
+    .then(() => res.json({ status: "OK", message: "Succes" }))
+    .catch(err => res.json({ status: "error", message: err.message }));
+});
+
+// router.post("/:id/edit")
 
 module.exports = router;
