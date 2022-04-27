@@ -28,7 +28,7 @@ router.post("/add", async (req, res) => {
     delete options.add_order_supplier;
 
     // отправка запроса
-    prisma.employees.create({ data: [options] })
+    prisma.employees.createMany({ data: [options] })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
