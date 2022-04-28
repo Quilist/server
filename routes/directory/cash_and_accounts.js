@@ -80,7 +80,6 @@ router.get("/auxiliary/data", async (req, res) => {
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 
-// router.get("/:id")
 router.post("/:id/remove", async (req, res) => {
   const cashBalance = await prisma.cash_accounts_balance.deleteMany({ where: { cash_account_id: Number(req.params.id) } });
   const cashAccounts = await prisma.cash_accounts.delete({ where: { id: Number(req.params.id) } });
@@ -90,6 +89,16 @@ router.post("/:id/remove", async (req, res) => {
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 
-// router.post("/:id/edit")
+router.post("/:id/edit", async (req, res) => {
+  prisma.cash_accounts.update({
+    where: { id: Number(req.params.id) },
+    data: {
+      name: req.body.name,
+      updated_at: String(Date.now())
+    }
+  })
+    .then(() => res.json({ status: "OK", message: "Succes" }))
+    .catch(e => res.json({ status: "error", message: e.message }));
+});
 
 module.exports = router;
