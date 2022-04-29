@@ -43,7 +43,7 @@ router.get("/", (req, res) => {
         return elem;
       });
     
-      console.log(elem)
+      console.log(items)
 
       res.json({
         status: "OK", message: {
