@@ -53,7 +53,7 @@ router.post("/add", async (req, res) => {
 
     if (card_number) {
 
-      const info = await privat24.individualInfo(req.body.card_number);
+      const info = await privat24.individualInfo(card_number);
       const currency = await prisma.currency.findMany({ where: { name: info.card.currency } });
 
       data.type_order = "account";
