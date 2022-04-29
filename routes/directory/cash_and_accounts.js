@@ -54,7 +54,7 @@ router.post("/add", async (req, res) => {
     if (card_number) {
 
       const info = await privat24.individualInfo(card_number);
-      const currency = await prisma.currency.findMany({ where: { name: info.card.currency } });
+      const currency = await prisma.currency.findMany({ where: { name: info.card.currency, id_user: req.token.id } });
 
       data.type_order = "account";
       data.stream = JSON.stringify({
@@ -74,6 +74,7 @@ router.post("/add", async (req, res) => {
         const result = await prisma.currency.create({
           data: {
             name: info.card.currency,
+            id_user: req.token.id,
             created_at: dateMs,
             updated_at: dateMs
           }
