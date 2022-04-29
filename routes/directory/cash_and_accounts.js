@@ -88,10 +88,8 @@ router.post("/add", async (req, res) => {
 
     const balanceList = data.balance || [];
     delete data.balance;
-    
-    console.log(data)
 
-    const cashAccount = await prisma.cash_accounts.create({ data: data });
+    const cashAccount = await prisma.cash_accounts.createMany({ data: [data] });
 
     if (balanceList.length) {
 
