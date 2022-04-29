@@ -242,9 +242,9 @@ model employees {
   f_name         String?
   s_name         String?
   mobile         String?
-  password       String
-  mail           String
-  role_id        String?
+  pass           String
+  e_mail         String         @unique
+  id_role        String?
   cash_acc       cash_accounts? @relation(fields: [cash_acc_id], references: [id])
   cash_acc_id    Int
   dashboard      Int            @default(0) @db.TinyInt
