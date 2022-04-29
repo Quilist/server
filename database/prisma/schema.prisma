@@ -45,6 +45,8 @@ model User {
   UserCurrency        user_currencies[]
   products_groups     products_groups[]
   cash_accounts_users cash_accounts_users[]
+  products_colors     products_colors[]
+  products_sizes      products_sizes[]
 }
 
 //Reference
@@ -62,6 +64,8 @@ model currency {
   from_user_currencies     user_currencies[]       @relation("FromUserCurrency")
   to_user_currencies       user_currencies[]       @relation("ToUserCurrency")
   pay_type                 pay_type[]
+  products_price           products_price[]
+  products_leftover        products_leftover[]
 }
 
 model banks_details {
@@ -105,12 +109,13 @@ model measure {
 }
 
 model storehouse {
-  id         Int    @id @default(autoincrement())
-  user       User?  @relation(fields: [id_user], references: [id])
-  id_user    Int
-  name       String @unique
-  created_at String
-  updated_at String
+  id                Int                 @id @default(autoincrement())
+  user              User?               @relation(fields: [id_user], references: [id])
+  id_user           Int
+  name              String              @unique
+  created_at        String
+  updated_at        String
+  products_leftover products_leftover[]
 }
 
 model type_price {
@@ -351,40 +356,88 @@ model products_groups {
   products   products[]
 }
 
+model products_colors {
+  id         Int        @id @default(autoincrement())
+  user       User?      @relation(fields: [id_user], references: [id])
+  id_user    Int
+  name       String     @unique
+  created_at String
+  updated_at String
+  products   products[]
+}
+
+model products_sizes {
+  id         Int        @id @default(autoincrement())
+  user       User?      @relation(fields: [id_user], references: [id])
+  id_user    Int
+  name       Int        @unique
+  created_at String
+  updated_at String
+  products   products[]
+}
+
 model products {
-  id          Int                    @id @default(autoincrement())
-  user        User?                  @relation(fields: [id_user], references: [id])
+  id          Int                 @id @default(autoincrement())
+  user        User?               @relation(fields: [id_user], references: [id])
   id_user     Int
-  is_model    Boolean                @default(false)
-  parent      products?              @relation("ProductParent", fields: [parent_id], references: [id], onDelete: Cascade)
-  parent_id   Int?                   @unique
+  parent_id   Int?
+  type        String
   name        String
-  group       products_groups?       @relation(fields: [group_id], references: [id])
-  group_id    Int
-  measure     measure?               @relation(fields: [measure_id], references: [id])
-  measure_id  Int
-  barcode     String
-  vendor_code String
-  supplier    suppliers?             @relation(fields: [supplier_id], references: [id])
-  supplier_id Int
-  min_stock   Int                    @default(0)
-  price       Decimal?               @db.Decimal(15, 2)
-  note        String?                @db.Text
+  group       products_groups?    @relation(fields: [group_id], references: [id])
+  group_id    Int?
+  measure     measure?            @relation(fields: [measure_id], references: [id])
+  measure_id  Int?
+  color       products_colors?    @relation(fields: [color_id], references: [id])
+  color_id    Int?
+  size        products_sizes?     @relation(fields: [size_id], references: [id])
+  size_id     Int?
+  barcode     Int
+  vendor_code Int?
+  supplier    suppliers?          @relation(fields: [supplier_id], references: [id])
+  supplier_id Int?
+  min_stock   Int                 @default(0)
+  price       Decimal?            @db.Decimal(15, 2)
+  note        String?             @db.Text
   created_at  String
   updated_at  String
   deleted_at  String?
-  amount_data products_amount_data[]
-  parents     products?              @relation("ProductParent")
+  prices      products_price[]
+  leftovers   products_leftover[]
+  childs      products_childs[]   @relation("ProductChild")
+  childs_from products_childs[]   @relation("ProductFromChild")
 }
 
-model products_amount_data {
+model products_childs {
+  id               Int       @id @default(autoincrement())
+  product          products? @relation("ProductChild", fields: [product_id], references: [id])
+  product_id       Int
+  product_child    products? @relation("ProductFromChild", fields: [product_child_id], references: [id])
+  product_child_id Int
+  min_stock        Int       @default(0)
+}
+
+model products_price {
   id          Int       @id @default(autoincrement())
   product     products? @relation(fields: [product_id], references: [id], onDelete: Cascade)
   product_id  Int
-  type        String
   name        String
-  amount      Decimal   @db.Decimal(9, 2)
-  currency_id String
+  price       Decimal   @db.Decimal(9, 2)
+  currency    currency? @relation(fields: [currency_id], references: [id])
+  currency_id Int
   created_at  String
   updated_at  String
+}
+
+model products_leftover {
+  id            Int         @id @default(autoincrement())
+  product       products?   @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  product_id    Int
+  storehouse    storehouse? @relation(fields: [storehouse_id], references: [id], onDelete: Cascade)
+  storehouse_id Int
+  number        Int
+  price         Decimal     @db.Decimal(9, 2)
+  currency      currency?   @relation(fields: [currency_id], references: [id])
+  currency_id   Int
+  created_at    String
+  updated_at    String
 }
