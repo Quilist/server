@@ -1,9 +1,11 @@
 const express = require("express");
-const itemsController = require("../../controllers/items/items-controller");
+
 const prisma = require("../../database/database");
 const router = express.Router();
 
 const privat24 = require("../../services/banks/privat24");
+
+const map = new Map();
 
 router.get("/", (req, res) => {
   const { orderBy } = req.query
@@ -24,9 +26,24 @@ router.get("/", (req, res) => {
     .then(async (result) => {
       const total = await prisma.cash_accounts.count({ where: { id_user: req.token.id } });
 
+      const User = map.get(req.token.id) || 0;
+      map.set(req.token.id, User + 1);
+
+      setTimeout(() => map.delete(req.token.id), 10000);
+
+      const items = result.map(elem => {
+        const stream = JSON.parse(elem.stream)
+
+        if (stream.privat24?.card && User === 0) {
+          const info = await privat24.individualInfo(stream.privat24.card);
+          console.log("OK")
+          elem.cash_accounts_balance[0].balance = info.balance;
+        }
+      });
+
       res.json({
         status: "OK", message: {
-          items: result,
+          items: items,
           paginations: {
             total: total,
             last_page: total <= limit ? 1 : total / limit
