@@ -41,6 +41,8 @@ router.get("/", (req, res) => {
           elem.cash_accounts_balance[0].balance = info.balance;
         }
         
+        console.log(elem)
+        
         return elem;
       });
 
