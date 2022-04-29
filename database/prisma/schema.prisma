@@ -66,6 +66,7 @@ model currency {
   pay_type                 pay_type[]
   products_price           products_price[]
   products_leftover        products_leftover[]
+  MovingMoney              moving_money[]
 }
 
 model banks_details {
@@ -228,6 +229,8 @@ model moving_money {
   from_cash_account_id Int
   to_cash_account      cash_accounts? @relation("ToCashAccount", fields: [to_cash_account_id], references: [id])
   to_cash_account_id   Int
+  currency             currency?      @relation(fields: [currency_id], references: [id])
+  currency_id          Int
   amount               Decimal        @db.Decimal(15, 2)
   note                 String?        @db.Text
   created_at           String
@@ -393,11 +396,11 @@ model products {
   color_id    Int?
   size        products_sizes?     @relation(fields: [size_id], references: [id])
   size_id     Int?
-  barcode     Int
+  barcode     Int?
   vendor_code Int?
   supplier    suppliers?          @relation(fields: [supplier_id], references: [id])
   supplier_id Int?
-  min_stock   Int                 @default(0)
+  min_stock   Int?                @default(0)
   price       Decimal?            @db.Decimal(15, 2)
   note        String?             @db.Text
   created_at  String

@@ -52,6 +52,17 @@ router.get("/", (req, res) => {
     },
   })
     .then(async (result) => {
+      const currencyExchangeList = await prisma.currency_exchange.findMany({
+        include: {
+          from_currency: true,
+          to_currency: true,
+        },
+      });
+      const moneyMovingList = await prisma.moving_money.findMany({
+        include: {
+          currency: true,
+        },
+      });
       const total = await prisma.pay.count();
 
       const types = {
@@ -80,9 +91,17 @@ router.get("/", (req, res) => {
         }
       }));
 
+      let r = resultData;
+      if(currencyExchangeList?.length > 0) {
+        r = r.concat(currencyExchangeList);
+      }
+      if(moneyMovingList?.length > 0) {
+        r = r.concat(moneyMovingList);
+      }
+
       res.json({
         status: "OK", message: {
-          items: resultData,
+          items: r,
           paginations: {
             total: total,
             last_page: total <= limit ? 1 : total / limit
