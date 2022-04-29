@@ -36,7 +36,7 @@ router.get("/", (req, res) => {
         
         if (stream.privat24?.card && User === 0) {
           const info = await privat24.individualInfo(stream.privat24.card);
-           console.log("OK")
+
           elem.cash_accounts_balance[0].balance = info.balance;
         }
 
