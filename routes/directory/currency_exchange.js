@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 25;
 
-    itemsService.all(page, limit, "user_currencies", req.token)
+    itemsService.all(page, limit, "currency_exchange", req.token)
         .then(result => res.json({ status: "OK", message: result }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
@@ -30,7 +30,7 @@ router.post("/add", async (req, res) => {
         return res.json({ status: "error", message: "Value one cannot be equal to value two" });
     }
 
-    prisma.user_currencies.findMany({ where: { id_user: req.token.id } })
+    prisma.currency_exchange.findMany({ where: { id_user: req.token.id } })
         .then(result => {
             // проверка на то, есть ли валютная пара с таким курсом
             const index = result.findIndex(el => {
@@ -49,7 +49,7 @@ router.post("/add", async (req, res) => {
                 updated_at: dateMs
             }
 
-            prisma.user_currencies.create({ data: options })
+            prisma.currency_exchange.create({ data: options })
                 .then(() => res.json({ status: "OK", message: "Succes" }))
                 .catch(e => res.json({ status: "error", message: e.message }));
         })
@@ -57,18 +57,18 @@ router.post("/add", async (req, res) => {
 });
 
 router.get("/:id", (req, res) => {
-    itemsService.id("user_currencies", Number(req.params.id), req.token)
+    itemsService.id("currency_exchange", Number(req.params.id), req.token)
         .then(result => res.json({ status: "OK", message: result }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 router.post("/:id/edit", (req, res) => {
-    itemsService.edit("user_currencies", req.body, Number(req.params.id), req.token)
+    itemsService.edit("currency_exchange", req.body, Number(req.params.id), req.token)
         .then(result => res.json({ status: "OK", message: result }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
 router.post("/:id/remove", (req, res) => {
-    itemsService.delete("user_currencies", Number(req.params.id), req.token)
+    itemsService.delete("currency_exchange", Number(req.params.id), req.token)
         .then(result => res.json({ status: "OK", message: result }))
         .catch(e => res.json({ status: "error", message: e.message }));
 });
