@@ -72,7 +72,7 @@ model banks_details {
   id               Int             @id @default(autoincrement())
   user             User?           @relation(fields: [id_user], references: [id])
   id_user          Int
-  bank_name        String          @unique
+  bank_name        String
   MFO              String?
   checking_account String?
   created_at       String
@@ -84,7 +84,7 @@ model expenditure {
   id         Int    @id @default(autoincrement())
   user       User?  @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String @unique
+  name       String
   created_at String
   updated_at String
 }
@@ -93,7 +93,7 @@ model income_items {
   id         Int    @id @default(autoincrement())
   user       User?  @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String @unique
+  name       String
   created_at String
   updated_at String
 }
@@ -102,7 +102,7 @@ model measure {
   id         Int        @id @default(autoincrement())
   user       User?      @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String     @unique
+  name       String
   created_at String
   updated_at String
   products   products[]
@@ -112,7 +112,7 @@ model storehouse {
   id                Int                 @id @default(autoincrement())
   user              User?               @relation(fields: [id_user], references: [id])
   id_user           Int
-  name              String              @unique
+  name              String
   created_at        String
   updated_at        String
   products_leftover products_leftover[]
@@ -122,7 +122,7 @@ model type_price {
   id         Int    @id @default(autoincrement())
   user       User?  @relation(fields: [id_user], references: [id])
   id_user    Int
-  name       String @unique
+  name       String
   created_at String
   updated_at String
 }
