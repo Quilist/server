@@ -13,7 +13,7 @@ async function individualInfo(card) {
     const res = await merchant.balance(card);
     const object = JSON.parse(res);
 
-    return object.response.data.info;
+    return object.response.data.info.cardbalance;
 }
 
 async function entityInfo(id, token) {
