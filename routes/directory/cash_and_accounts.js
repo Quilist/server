@@ -57,11 +57,11 @@ router.post("/add", async (req, res) => {
       const currency = await prisma.currency.findMany({ where: { name: info.card.currency } });
 
       data.type_order = "account";
-      data.stream = {
+      data.stream = JSON.stringify({
         privat24: {
           card: card_number
         }
-      };
+      });
 
       if (currency.length) {
         data.balance = [{
@@ -89,7 +89,7 @@ router.post("/add", async (req, res) => {
     const balanceList = data.balance || [];
     delete data.balance;
 
-    const cashAccount = await prisma.cash_accounts.createMany({ data: [data] });
+    const cashAccount = await prisma.cash_accounts.create({ data: data });
 
     if (balanceList.length) {
 
@@ -105,7 +105,6 @@ router.post("/add", async (req, res) => {
 
     res.json({ status: "OK", message: "Success" });
   } catch (e) {
-    console.log(e.message)
     res.json({ status: "error", message: e.message });
   }
 });
