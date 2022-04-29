@@ -35,7 +35,7 @@ router.get("/", (req, res) => {
         const stream = JSON.parse(JSON.stringify(elem.stream))
 
         console.log(stream.privat24?.card && User === 0)
-        console.log(stream.privat24?.card)
+        console.log(stream)
         console.log(User)
         
         if (stream.privat24?.card && User === 0) {
