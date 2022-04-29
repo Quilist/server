@@ -57,11 +57,11 @@ router.post("/add", async (req, res) => {
       const currency = await prisma.currency.findMany({ where: { name: info.card.currency } });
 
       data.type_order = "account";
-      data.stream = JSON.stringify({
+      data.stream = {
         privat24: {
           card: card_number
         }
-      });
+      };
 
       if (currency.length) {
         data.balance = [{
