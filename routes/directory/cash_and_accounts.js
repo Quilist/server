@@ -3,10 +3,12 @@ const itemsController = require("../../controllers/items/items-controller");
 const prisma = require("../../database/database");
 const router = express.Router();
 
+const privat24 = require("../../services/banks/privat24");
+
 router.get("/", (req, res) => {
-  const { reqPage, reqLimit, orderBy } = req.query
-  const page = Number(reqPage) || 1;
-  const limit = Number(reqLimit) || 25;
+  const { orderBy } = req.query
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 25;
 
   prisma.cash_accounts.findMany({
     skip: limit * (page - 1),
@@ -38,10 +40,6 @@ router.get("/", (req, res) => {
 router.post("/add", async (req, res) => {
   const dateMs = String(Date.now());
 
-  const balanceList = req.body.balance || [];
-
-  delete req.body.balance;
-
   const data = {
     ...req.body,
     id_user: req.token.id,
@@ -49,7 +47,48 @@ router.post("/add", async (req, res) => {
     updated_at: dateMs
   }
 
+  const card_number = req.body.stream.card_number;
+
   try {
+
+    if (card_number) {
+
+      const info = await privat24.individualInfo(req.body.card_number);
+      const currency = await prisma.currency.findMany({ where: { name: info.card.currency } });
+
+      data.type_order = "account";
+      data.stream = JSON.stringify({
+        privat24: {
+          card: card_number
+        }
+      });
+
+      if (currency.length) {
+        data.balance = [{
+          currency_id: currency[0].id,
+          balance: info.balance
+        }];
+      } else {
+        const dateMs = String(Date.now());
+
+        const result = await prisma.currency.create({
+          data: {
+            name: info.card.currency,
+            created_at: dateMs,
+            updated_at: dateMs
+          }
+        });
+
+        data.balance = [{
+          currency_id: result.id,
+          balance: info.balance
+        }];
+      }
+    }
+
+    const balanceList = data.balance || [];
+    delete data.balance;
+
     const cashAccount = await prisma.cash_accounts.create({ data: data });
 
     if (balanceList.length) {
