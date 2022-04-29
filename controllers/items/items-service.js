@@ -15,7 +15,14 @@ class itemsService {
         return await prisma[table].create({ data: options });
     }
 
-    async edit(table, data, id) {
+    async edit(table, data, id, token) {
+        const record = await prisma[table].findUnique({ where: { id: id } });
+
+        // проверка на пренадлежность клиента к пользователю
+        if (record?.id_user !== token.id) {
+            throw apiError.unathorizedError();
+        }
+
         const dateMs = String(Date.now());
 
         const options = {
@@ -26,14 +33,21 @@ class itemsService {
         return await prisma[table].update({ data: options, where: { id: id } });
     }
 
-    async delete(table, id) {
+    async delete(table, id, token) {
+        const data = await prisma[table].findUnique({ where: { id: id } });
+
+        // проверка на пренадлежность клиента к пользователю
+        if (data?.id_user !== token.id) {
+            throw apiError.unathorizedError();
+        }
+
         return await prisma[table].delete({ where: { id: id } });
     }
 
     async all(page, limit, table, token) {
 
         const data = await prisma[table].findMany({ skip: limit * (page - 1), take: limit, where: { id_user: token.id } })
-        const total = await prisma[table].count();
+        const total = await prisma[table].count({ where: { id_user: token.id } });
 
         return {
             items: data,
@@ -46,11 +60,10 @@ class itemsService {
 
     async id(table, id, token) {
 
-        const data = await prisma[table].findUnique({ where: { id: id } })
+        const data = await prisma[table].findUnique({ where: { id: id } });
 
-        if (!data) throw apiError.badRequest("Unknow id");
         // проверка на пренадлежность клиента к пользователю
-        if (data.id_user !== token.id) {
+        if (data?.id_user !== token.id) {
             throw apiError.unathorizedError();
         }
 

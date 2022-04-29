@@ -8,9 +8,9 @@ const ApiError = require("../../exceptions/error");
 
 class UserService {
     async registration(username, email, password) {
-        const array = await prisma.user.findMany({ where: { e_mail: email } });
+        const data = await prisma.user.findUnique({ where: { e_mail: email } });
 
-        if (array.length) {
+        if (data) {
             throw ApiError.badRequest("Nav.Registration, EmailRegistered");
         }
 
@@ -31,48 +31,61 @@ class UserService {
     async login(email, password, ip) {
         if (!email || !password) throw ApiError.badRequest("Nav.Authn, ValidationError");
 
-        const data = await prisma.user.findMany({ where: { e_mail: email } })
+        let data = await prisma.user.findUnique({ where: { e_mail: email } });
+        // если найдена запись то логинимся как админ
+        if (data) {
+            if (data?.pass !== utils.stringHash(password)) {
+                throw ApiError.badRequest("Nav.Authn, LoginError");
+            }
+        } else { // Иначе ищем запись в сотрудниках
+            data = await prisma.employees.findUnique({ where: { e_mail: email } })
 
-        if (data[0]?.pass !== utils.stringHash(password)) {
-            throw ApiError.badRequest("Nav.Authn, LoginError");
+            if (data?.pass !== utils.stringHash(password)) {
+                throw ApiError.badRequest("Nav.Authn, LoginError");
+            }
         }
 
-        return utils.authToken(email, ip, data[0].id);
+        return utils.authToken(email, ip, data.id, data.id_role || "Админ");
     }
 
     async activation(code, ip) {
-        // Проверка на наличие кода
-        if (!code) throw ApiError.badRequest("Nav.Profile, ConfirmError");
-
         code = utils.validateObjectSign(code);
-
         // Проверка на валидность кода
         if (!code) throw ApiError.badRequest("Nav.Profile, InvalidCode");
 
         const { username, email, password, exp } = code;
-
         // Проверка на то, не истек ли срок годности кода
         if (exp < Date.now()) throw ApiError.badRequest("Nav.Profile, TimeoutError");
 
-        const array = await prisma.user.findMany({ where: { e_mail: email } });
+        const user = await prisma.user.findUnique({ where: { e_mail: email } });
 
-        if (array.length) throw ApiError.badRequest("Nav.Registration, EmailRegistered");
+        if (user) throw ApiError.badRequest("Nav.Registration, EmailRegistered");
 
         const dateMs = String(Date.now());
 
-        const data = await prisma.user.create({ data: { username: username, e_mail: email, pass: password, created_at: dateMs, updated_at: dateMs } });
+        const data = await prisma.user.create({
+            data: {
+                username: username,
+                e_mail: email,
+                pass: password,
+                created_at: dateMs,
+                updated_at: dateMs
+            }
+        });
 
-        return utils.authToken(email, ip, data.id)
+        return utils.authToken(email, ip, data.id, "Админ")
     }
 
     async restoration(email) {
         if (!email) throw ApiError.badRequest("Nav.Restore, ValidationError");
 
-        const array = await prisma.user.findMany({ where: { e_mail: email } })
+        const user = await prisma.user.findUnique({ where: { e_mail: email } })
 
-        if (!array.length) throw ApiError.badRequest("Nav.Registration, EmailNotRegistered");
+        if (!user) throw ApiError.badRequest("Nav.Registration, EmailNotRegistered");
 
-        const code = utils.restorationCode(email);
+        //Создание кода для восстановления.
+        const code = utils.objectSign({ email: email, exp: Date.now() + 3600000 });
+
         // Отправка кода восстановления
         send({
             user: config.Gmail.email,
@@ -89,10 +102,8 @@ class UserService {
     }
 
     async changePassword(password, code) {
-        if (!code) throw ApiError.badRequest("Nav.Profile, ConfirmError");
-
         code = utils.validateObjectSign(code);
-
+        // Проверка на валидность кода
         if (!code) throw ApiError.badRequest("Nav.Profile, InvalidCode");
 
         const { email, exp } = code;
@@ -101,8 +112,8 @@ class UserService {
 
         password = utils.stringHash(password);
 
-        const array = await prisma.user.findMany({ where: { e_mail: email } })
-        if (!array.length || !array[0].pass === password) throw ApiError.badRequest("Nav.Profile, InvalidPassword");
+        const user = await prisma.user.findUnique({ where: { e_mail: email } });
+        if (!user || !user.pass === password) throw ApiError.badRequest("Nav.Profile, InvalidPassword");
 
         return await prisma.user.update({ where: { e_mail: email }, data: { pass: password } });
     }

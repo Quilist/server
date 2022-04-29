@@ -11,7 +11,7 @@ router.get("/", itemsController.all);
 
 // добавление supplier
 router.post("/add", async (req, res) => {
-    let { name, mobile, mail, company, edrpou, nds, code_nds, address, notes } = req.body;
+    let { name, mobile, mail, company, edrpou, nds, code_nds, address, note, discount, duty } = req.body;
 
     if (name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
@@ -42,7 +42,9 @@ router.post("/add", async (req, res) => {
         code_nds,
         mail,
         address,
-        note: notes,
+        note,
+        discount,
+        duty,
         created_at: dateMs,
         updated_at: dateMs
     }
@@ -58,7 +60,7 @@ router.get("/:id", itemsController.id);
 
 // редактирование supplier
 router.post("/:id/edit", async (req, res) => {
-    let { name, mobile, mail, company, edrpou, nds, code_nds, address, notes } = req.body;
+    let { name, mobile, mail, company, edrpou, nds, code_nds, address, note, discount, duty } = req.body;
 
     if (name?.length < 3 || mobile?.length !== 10) {
         return res.json({ status: "error", message: "incorrect name or phone" })
@@ -86,7 +88,9 @@ router.post("/:id/edit", async (req, res) => {
         code_nds,
         mail,
         address,
-        note: notes,
+        note,
+        discount,
+        duty,
         updated_at: String(Date.now())
     }
 

@@ -8,11 +8,15 @@ module.exports = class ApiError extends Error {
         this.error = error;
     }
 
+    static sessionError() {
+        return new ApiError(402, "Invalid session");
+    }
+
     static unathorizedError() {
         return new ApiError(401, "Action not allowed");
     }
 
     static badRequest(message) {
-        return new ApiError(400, message)
+        return new ApiError(400, message);
     }
 }

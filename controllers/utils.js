@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const ApiError = require("../exceptions/error");
 
 const config = require("../config.json");
 
@@ -62,7 +63,7 @@ function validateObjectSign(encodedObject) {
     }
 }
 
-function authToken(email, ip, id) {
+function authToken(email, ip, id, id_role) {
     /*
      * Создание токена.
      */
@@ -70,6 +71,7 @@ function authToken(email, ip, id) {
         email: email,
         ip: ip,
         id: id,
+        id_role: id_role,
         exp: Date.now() + 43200000
     });
 }
@@ -86,16 +88,6 @@ function verificationCode(username, email, password) {
     });
 }
 
-function restorationCode(email) {
-    /*
-     * Создание кода для восстановления.
-     */
-    return objectSign({
-        email: email,
-        exp: Date.now() + 3600000
-    });
-}
-
 function isTokenValid(req, res, next) {
     /*
      * Валидация токена, и его добавление в запрос 
@@ -107,11 +99,10 @@ function isTokenValid(req, res, next) {
         return res.json({ status: "error", message: "Invalid session" });
     }
 
-    const tokenKeys = Object.keys(token);
-    const validateKeys = ["email", "id", "ip", "exp"];
+    const validateKeys = ["email", "id", "ip", "exp", "id_role"];
 
-    for (const key in validateKeys) {
-        if (!tokenKeys[key]) {
+    for (let i = 0; i < validateKeys.length; i++) {
+        if (!token[validateKeys[i]]) {
             return res.json({ status: "error", message: "Invalid session" });
         }
     }
@@ -124,7 +115,6 @@ module.exports = {
     stringHash,
     authToken,
     verificationCode,
-    restorationCode,
     validateObjectSign,
     isTokenValid
 }

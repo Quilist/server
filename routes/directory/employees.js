@@ -18,6 +18,7 @@ router.post("/add", async (req, res) => {
     const dateMs = String(Date.now());
 
     const options = {
+        id_user: req.token.id,
         ...req.body,
         created_at: dateMs,
         updated_at: dateMs
@@ -25,11 +26,14 @@ router.post("/add", async (req, res) => {
 
     options.order_supplier = JSON.stringify(add_order_supplier);
     delete options.add_order_supplier;
-    
+
     // отправка запроса
-    prisma.employees.create({ data: { id_user: req.token.id, ...options } })
+    prisma.employees.createMany({ data: [options] })
         .then(() => res.json({ status: "OK", message: "Succes" }))
-        .catch(err => res.json({ status: "error", message: err.message }));
+        .catch(err => {
+            res.json({ status: "error", message: err.message })
+            console.log(err.message)
+        });
 });
 
 // получение Employee по айди
