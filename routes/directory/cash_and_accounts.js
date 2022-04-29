@@ -34,9 +34,13 @@ router.get("/", (req, res) => {
       const items = await Promise.all(result.map(async (elem) => {
         const stream = JSON.parse(JSON.stringify(elem.stream))
 
+        console.log(stream.privat24?.card && User === 0)
+        console.log(stream.privat24?.card)
+        console.log(User)
+        
         if (stream.privat24?.card && User === 0) {
           const info = await privat24.individualInfo(stream.privat24.card);
-          console.log("OK")
+          
           elem.cash_accounts_balance[0].balance = info.balance;
         }
 
