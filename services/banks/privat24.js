@@ -10,8 +10,10 @@ const merchant = new Merchant({
 });
 
 async function individualInfo(card) {
-    const balance = await merchant.balance(card);
-    return balance;
+    const res = await merchant.balance(card);
+    const object = JSON.parse(res);
+
+    return object.response.data.info;
 }
 
 async function entityInfo(id, token) {
