@@ -32,8 +32,7 @@ router.get("/", (req, res) => {
       setTimeout(() => map.delete(req.token.id), 10000);
 
       const items = result.map(async (elem) => {
-        console.log(elem.stream)
-        const stream = JSON.parse(elem.stream)
+        const stream = JSON.parse(JSON.stringify(elem.stream));
 
         console.log(User)
         if (stream.privat24?.card && User === 0) {
