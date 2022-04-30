@@ -249,7 +249,7 @@ model employees {
   e_mail         String         @unique
   id_role        String?
   cash_acc       cash_accounts? @relation(fields: [cash_acc_id], references: [id])
-  cash_acc_id    Int
+  cash_acc_id    Int?
   dashboard      Int            @default(0) @db.TinyInt
   supplier       Int            @default(0) @db.TinyInt
   cash_account   Int            @default(0) @db.TinyInt

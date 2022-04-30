@@ -18,17 +18,17 @@ router.post("/add", async (req, res) => {
     const dateMs = String(Date.now());
 
     const options = {
-        id_user: req.token.id,
-        ...req.body,
-        created_at: dateMs,
-        updated_at: dateMs
+      id_user: req.token.id,
+      ...req.body,
+      created_at: dateMs,
+      updated_at: dateMs
     }
 
     options.order_supplier = JSON.stringify(add_order_supplier);
     delete options.add_order_supplier;
 
     // отправка запроса
-    prisma.employees.createMany({ data: [options] })
+    prisma.employees.create({ data: options })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => {
             res.json({ status: "error", message: err.message })
@@ -47,9 +47,9 @@ router.get("/:id", (req, res) => {
                 return res.json({ status: "error", message: "Action not allowed" });
             }
 
-            result.order_supplier = JSON.parse(elem?.order_supplier || `[]`)
+            result.order_supplier = JSON.parse(result?.order_supplier || `[]`)
 
-            res.json({ status: "OK", message: elem });
+            res.json({ status: "OK", message: result });
         })
         .catch(err => res.json({ status: "error", message: err.message }));
 });
