@@ -4,10 +4,17 @@ const prisma = require("../../database/database");
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  const { search, date_from, date_to, reqPage, reqLimit, orderBy } = req.query;
+  const { date_from, date_to, reqPage, reqLimit, orderBy } = req.query;
+  let { search } = req.query;
 
   const page = Number(reqPage) || 1;
   const limit = Number(reqLimit) || 25;
+
+  if(search) {
+    if(!isNaN(parseInt(search))) {
+      search = parseInt(search);
+    }
+  }
 
   const dateSearch = (date_from || date_to)
     ? {
@@ -21,7 +28,7 @@ router.get("/", (req, res) => {
   const searchData = search
     ? {
       OR: [
-        { number: parseInt(search) },
+        { number: search },
       ],
     }
     : {}
