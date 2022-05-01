@@ -4,16 +4,16 @@ const prisma = require("../../database/database");
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  const { search, dateFrom, dateTo, reqPage, reqLimit, orderBy } = req.query;
+  const { search, date_from, date_to, reqPage, reqLimit, orderBy } = req.query;
 
   const page = Number(reqPage) || 1;
   const limit = Number(reqLimit) || 25;
 
-  const dateSearch = search
+  const dateSearch = (date_from || date_to)
     ? {
       created_at: {
-        gte: dateFrom || '',
-        lt: dateTo || ''
+        gte: date_from || '',
+        lt: date_to || ''
       },
     }
     : {}
@@ -53,6 +53,14 @@ router.get("/", (req, res) => {
   })
     .then(async (result) => {
       const currencyExchangeList = await prisma.currency_exchange.findMany({
+        where: {
+          ...dateSearch,
+          ...searchData,
+          id_user: req.token.id
+        },
+        orderBy: {
+          created_at: orderBy || 'desc',
+        },
         include: {
           from_currency: true,
           to_currency: true,
@@ -60,6 +68,14 @@ router.get("/", (req, res) => {
         },
       });
       const moneyMovingList = await prisma.moving_money.findMany({
+        where: {
+          ...dateSearch,
+          ...searchData,
+          id_user: req.token.id
+        },
+        orderBy: {
+          created_at: orderBy || 'desc',
+        },
         include: {
           currency: true,
           from_cash_account: true,

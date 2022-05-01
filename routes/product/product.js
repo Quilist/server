@@ -194,7 +194,27 @@ router.get("/:id", (req, res) => {
         },
       },
     })
-        .then((result) => {
+        .then(async (result) => {
+          if(result.type === 'product') {
+            const productChildList = await prisma.products.findMany(
+              {
+                where: {
+                  id_user: req.token.id,
+                  parent_id: result.id
+                },
+                include: {
+                  prices: true,
+                  leftovers: {
+                    include: {
+                      currency: true,
+                      storehouse: true
+                    }
+                  },
+                },
+              }
+            );
+            result.childs = productChildList;
+          }
             if (!result) return res.json({ status: "error", message: "Unknown id" });
 
             if (result.id_user !== req.token.id) {
@@ -244,6 +264,55 @@ router.post("/:id/edit", async (req, res) => {
       })
     }
 
+    //save childs
+    if(childs?.length > 0 && product.type === 'product') {
+      await prisma.products.deleteMany({ where: { parent_id: product.id } });
+      let childData = [];
+      let child = {}
+      childs.forEach(function(item) {
+        const pricesItem = item.prices;
+        const leftoversItem = item.leftovers;
+        delete item.prices;
+        delete item.leftovers;
+
+        child = {
+          ...item,
+          type: product.type,
+          id_user: req.token.id,
+          parent_id: product.id,
+          created_at: dateMs,
+          updated_at: dateMs,
+        };
+
+        //save prices
+        if(pricesItem?.length > 0) {
+          let priceData = [];
+          pricesItem.forEach(function (itemPrice) {
+            priceData.push({
+              name: itemPrice.name,
+              price: itemPrice.price,
+              currency_id: itemPrice.currency_id,
+              created_at: dateMs,
+              updated_at: dateMs
+            })
+          });
+          child.prices = {
+            create: priceData,
+          }
+        }
+
+        childData.push(child)
+      });
+
+      const createProductPromises = childData.map((child) => {
+        return prisma.products.create({
+          data: child
+        })
+      })
+
+      await Promise.all(createProductPromises)
+    }
+
     if(childs?.length > 0 && product.type === 'set') {
       await prisma.products_childs.deleteMany({ where: { product_id: product.id } });
       let childData = [];
@@ -276,18 +345,20 @@ router.post("/:id/remove", (req, res) => {
 
 router.get("/auxiliary/data", async (req, res) => {
 
+  const onlyForAuthUser = { where: { id_user: req.token.id } };
   const typeList = [{name: 'Товар', value: 'product'}, {name: 'Комплект', value: 'set'}, {name: 'Услуга', value: 'service'}];
-  const storehouse = await prisma.storehouse.findMany();
-  const typePrice = await prisma.type_price.findMany();
-  const measure = await prisma.measure.findMany();
-  const supplier = await prisma.suppliers.findMany();
-  const group = await prisma.products_groups.findMany();
-  const currency = await prisma.currency.findMany();
-  const colorList = await prisma.products_colors.findMany();
-  const sizeList = await prisma.products_sizes.findMany();
+  const storehouse = await prisma.storehouse.findMany(onlyForAuthUser);
+  const typePrice = await prisma.type_price.findMany(onlyForAuthUser);
+  const measure = await prisma.measure.findMany(onlyForAuthUser);
+  const supplier = await prisma.suppliers.findMany(onlyForAuthUser);
+  const group = await prisma.products_groups.findMany(onlyForAuthUser);
+  const currency = await prisma.currency.findMany(onlyForAuthUser);
+  const colorList = await prisma.products_colors.findMany(onlyForAuthUser);
+  const sizeList = await prisma.products_sizes.findMany(onlyForAuthUser);
   const productList = await prisma.products.findMany(
     {
       where: {
+        id_user: req.token.id,
         parent_id: null,
         type: {
           in: ['product', 'service'],
