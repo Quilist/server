@@ -21,7 +21,7 @@ router.get("/", (req, res) => {
   const searchData = search
     ? {
       OR: [
-        { note: { contains: search } },
+        { number: parseInt(search) },
       ],
     }
     : {}
@@ -55,7 +55,6 @@ router.get("/", (req, res) => {
       const currencyExchangeList = await prisma.currency_exchange.findMany({
         where: {
           ...dateSearch,
-          ...searchData,
           id_user: req.token.id
         },
         orderBy: {
@@ -70,7 +69,6 @@ router.get("/", (req, res) => {
       const moneyMovingList = await prisma.moving_money.findMany({
         where: {
           ...dateSearch,
-          ...searchData,
           id_user: req.token.id
         },
         orderBy: {
