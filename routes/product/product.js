@@ -33,7 +33,7 @@ router.get("/", (req, res) => {
         .catch(err => res.json({ status: "error", message: err.message }));
 });
 
-router.post("/add", async(req, res) => {
+router.post("/add", async (req, res) => {
   const dateMs = String(Date.now());
 
   const prices = req.body.prices;
@@ -183,10 +183,15 @@ router.get("/:id", (req, res) => {
         prices: true,
         leftovers: {
           include: {
+            currency: true,
             storehouse: true
           }
         },
-        childs: true,
+        childs: {
+          include: {
+            product_child: true
+          }
+        },
       },
     })
         .then((result) => {
@@ -202,7 +207,7 @@ router.get("/:id", (req, res) => {
 });
 
 
-router.post("/:id/edit", (req, res) => {
+router.post("/:id/edit", async (req, res) => {
   const dateMs = String(Date.now());
 
   const prices = req.body.prices;
@@ -217,9 +222,50 @@ router.post("/:id/edit", (req, res) => {
     updated_at: dateMs
   }
 
-    prisma.products.update({ data: { ...data }, where: { id: Number(req.params.id) } })
-        .then(() => res.json({ status: "OK", message: "Succes" }))
-        .catch(err => res.json({ status: "error", message: err.message }));
+  try {
+    //save main
+    const product = await prisma.products.update({ data: { ...data }, where: { id: Number(req.params.id) } });
+
+    //save prices
+    if(prices?.length > 0) {
+      await prisma.products_price.deleteMany({ where: { product_id: product.id } });
+      let priceData = [];
+      prices.forEach(function (item) {
+        priceData.push({
+          ...item,
+          product_id: product.id,
+          created_at: dateMs,
+          updated_at: dateMs
+        })
+      });
+
+      await prisma.products_price.createMany({
+        data: priceData
+      })
+    }
+
+    if(childs?.length > 0 && product.type === 'set') {
+      await prisma.products_childs.deleteMany({ where: { product_id: product.id } });
+      let childData = [];
+      childs.forEach(function (item) {
+        childData.push({
+          product_id: product.id,
+          product_child_id: item.product_child_id ? item.product_child_id : item.id,
+          min_stock: item.min_stock
+        })
+      });
+
+      await prisma.products_childs.createMany({
+        data: childData
+      })
+    }
+
+    res.json({ status: "OK",
+      message: "Success"})
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
 });
 
 router.post("/:id/remove", (req, res) => {
