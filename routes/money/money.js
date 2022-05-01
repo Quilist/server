@@ -56,11 +56,14 @@ router.get("/", (req, res) => {
         include: {
           from_currency: true,
           to_currency: true,
+          cash_account: true,
         },
       });
       const moneyMovingList = await prisma.moving_money.findMany({
         include: {
           currency: true,
+          from_cash_account: true,
+          to_cash_account: true,
         },
       });
       const total = await prisma.pay.count();

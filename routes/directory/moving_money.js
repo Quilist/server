@@ -42,4 +42,11 @@ router.post("/:id/edit", (req, res) => {
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 
+router.post("/:id/remove", (req, res) => {
+  itemsService.delete("moving_money", Number(req.params.id), req.token)
+    .then(result => res.json({ status: "OK", message: result }))
+    .catch(e => res.json({ status: "error", message: e.message }));
+});
+
+
 module.exports = router;
