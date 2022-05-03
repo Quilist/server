@@ -17,6 +17,7 @@ async function individualInfo(card) {
 }
 
 async function entityInfo(id, token) {
+    console.log(`${id}\n \n ${token}\n`)
     const response = await fetch("https://acp.privatbank.ua/api/statements/balance/final?limit=1000", {
         'headers': {
             'id': id,
