@@ -160,8 +160,8 @@ router.post("/:id/edit", async (req, res) => {
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 
-router.get("/data/:account", async (req, res) => {
-  const info = await privat24.entityInfo(req.body.id, req.body.token)
+router.get("/account", async (req, res) => {
+  const info = await privat24.entityInfo(req.query.id, req.query.token)
 
   res.json({ status: "OK", message: info });
 });
