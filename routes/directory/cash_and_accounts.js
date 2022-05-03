@@ -33,7 +33,7 @@ router.get("/", (req, res) => {
 
       const items = await Promise.all(result.map(async (elem) => {
         const stream = JSON.parse(JSON.stringify(elem.stream) !== "{}" ? elem.stream : "{}")
-        
+
         if (stream.privat24?.card && User === 0) {
           const info = await privat24.individualInfo(stream.privat24.card);
 
@@ -158,6 +158,12 @@ router.post("/:id/edit", async (req, res) => {
   })
     .then(() => res.json({ status: "OK", message: "Succes" }))
     .catch(e => res.json({ status: "error", message: e.message }));
+});
+
+router.get("/data/:account", async (req, res) => {
+  const info = await privat24.entityInfo(req.body.id, req.body.token)
+
+  res.json({ status: "OK", message: info });
 });
 
 module.exports = router;
