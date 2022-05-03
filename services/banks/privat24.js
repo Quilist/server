@@ -26,7 +26,7 @@ async function entityInfo(id, token) {
     });
 
     const result = await response.json();
-    console.log(res)
+    console.log(result)
     const array = result.balances.filter(elem => elem.balanceIn !== '0.00')
 
     return array;
