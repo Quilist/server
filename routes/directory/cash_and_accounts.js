@@ -161,9 +161,11 @@ router.post("/:id/edit", async (req, res) => {
 });
 
 router.get("/account", async (req, res) => {
-  const info = await privat24.entityInfo(req.query.id, req.query.token)
+  const { id, token } = req.query;
 
-  res.json({ status: "OK", message: info });
+  privat24.entityInfo(id, token)
+    .then(result => res.json({ status: "OK", message: result }))
+    .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 module.exports = router;
