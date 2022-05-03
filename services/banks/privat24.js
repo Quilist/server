@@ -17,7 +17,7 @@ async function individualInfo(card) {
 }
 
 async function entityInfo(id, token) {
-    let response = await fetch("https://acp.privatbank.ua/api/statements/balance/final?limit=1000", {
+    const response = await fetch("https://acp.privatbank.ua/api/statements/balance/final?limit=1000", {
         headers: {
             'id': id,
             'token': token,
@@ -27,9 +27,10 @@ async function entityInfo(id, token) {
 
     if (response.status !== 200) return undefined;
 
-    const arr = response.balances.filter(elem => elem.balanceIn !== '0.00')
+    const result = await response.json();
+    const array = result.balances.filter(elem => elem.balanceIn !== '0.00')
 
-    return arr;
+    return array;
 }
 
 module.exports = {
