@@ -40,6 +40,14 @@ router.get("/", (req, res) => {
           elem.cash_accounts_balance[0].balance = info.balance;
         }
 
+        if (stream.privat24?.acc && User === 0) {
+          const info = await privat24.entityInfo(stream.privat24.id, stream.privat24.token)
+
+          const index = info.findIndex(data => data.acc === stream.privat24.acc);
+
+          if (index !== 1) elem.cash_accounts_balance[0].balance = info[index].balance;
+        }
+
         return elem;
       }));
 
@@ -66,25 +74,27 @@ router.post("/add", async (req, res) => {
     updated_at: dateMs
   }
 
-  const card_number = req.body.stream.card_number;
+  const { card_number, acc, balance, currency, id, token } = req.body.stream;
 
   try {
 
     if (card_number) {
 
       const info = await privat24.individualInfo(card_number);
-      const currency = await prisma.currency.findMany({ where: { name: info.card.currency, id_user: req.token.id } });
+      const pCurrency = await prisma.currency.findMany({ where: { name: info.card.currency, id_user: req.token.id } });
 
       data.type_order = "account";
       data.stream = JSON.stringify({
         privat24: {
-          card: card_number
+          card: card_number,
+          id: id,
+          token: token
         }
       });
 
-      if (currency.length) {
+      if (pCurrency.length) {
         data.balance = [{
-          currency_id: currency[0].id,
+          currency_id: pCurrency[0].id,
           balance: info.balance
         }];
       } else {
@@ -102,6 +112,40 @@ router.post("/add", async (req, res) => {
         data.balance = [{
           currency_id: result.id,
           balance: info.balance
+        }];
+      }
+    }
+
+    if (acc) {
+      const pCurrency = await prisma.currency.findMany({ where: { name: currency, id_user: req.token.id } });
+
+      data.type_order = "account";
+      data.stream = JSON.stringify({
+        privat24: {
+          acc: acc
+        }
+      });
+
+      if (pCurrency.length) {
+        data.balance = [{
+          currency_id: pCurrency[0].id,
+          balance: balance
+        }];
+      } else {
+        const dateMs = String(Date.now());
+
+        const result = await prisma.currency.create({
+          data: {
+            name: currency,
+            id_user: req.token.id,
+            created_at: dateMs,
+            updated_at: dateMs
+          }
+        });
+
+        data.balance = [{
+          currency_id: result.id,
+          balance: balance
         }];
       }
     }
