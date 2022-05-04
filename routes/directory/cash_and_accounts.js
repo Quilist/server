@@ -86,9 +86,7 @@ router.post("/add", async (req, res) => {
       data.type_order = "account";
       data.stream = JSON.stringify({
         privat24: {
-          card: card_number,
-          id: id,
-          token: token
+          card: card_number
         }
       });
 
@@ -122,7 +120,9 @@ router.post("/add", async (req, res) => {
       data.type_order = "account";
       data.stream = JSON.stringify({
         privat24: {
-          acc: acc
+          acc: acc,
+          id: id,
+          token: token
         }
       });
 
