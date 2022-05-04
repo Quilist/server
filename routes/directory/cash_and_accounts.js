@@ -45,7 +45,7 @@ router.get("/", (req, res) => {
 
           const index = info.findIndex(data => data.acc === stream.privat24.acc);
 
-          if (index !== 1) elem.cash_accounts_balance[0].balance = info[index].balance;
+          if (index !== -1) elem.cash_accounts_balance[0].balance = info[index].balanceIn;
         }
 
         return elem;
