@@ -32,7 +32,6 @@ router.get("/", (req, res) => {
       setTimeout(() => map.delete(req.token.id), 10000);
 
       const items = await Promise.all(result.map(async (elem) => {
-        console.log(elem.stream)
         const stream = JSON.parse(JSON.stringify(elem.stream) !== "{}" ? elem.stream : "{}")
 
         if (stream.privat24?.card && User === 0) {
@@ -62,7 +61,10 @@ router.get("/", (req, res) => {
         }
       });
     })
-    .catch(e => res.json({ status: "error", message: e.message }));
+    .catch(e => {
+      console.log(e)
+      res.json({ status: "error", message: e.message })
+    });
 });
 
 router.post("/add", async (req, res) => {
