@@ -337,8 +337,9 @@ router.post("/:id/edit", async (req, res) => {
   }
 });
 
-router.post("/:id/remove", (req, res) => {
-    prisma.products.delete({ where: { id: Number(req.params.id) } })
+router.post("/:id/remove", async (req, res) => {
+  await prisma.products.deleteMany({ where: { parent_id: Number(req.params.id) } });
+  await prisma.products.delete({ where: { id: Number(req.params.id) } })
         .then(() => res.json({ status: "OK", message: "Succes" }))
         .catch(err => res.json({ status: "error", message: err.message }));
 });
