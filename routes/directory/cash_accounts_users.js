@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const itemsController = require("../../controllers/items/items-controller");
+const prisma = require("../../database/database");
 
 router.get("/", async (req, res, next) => {
   try {
