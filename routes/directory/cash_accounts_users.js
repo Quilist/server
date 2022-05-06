@@ -12,13 +12,13 @@ router.get("/", async (req, res, next) => {
     const data = await prisma.cash_accounts_users.findMany({
       skip: limit * (page - 1),
       take: limit,
-      where: { id_user: token.id },
+      where: { id_user: req.token.id },
       include: {
         cash_account: true
       }
     });
 
-    const total = await prisma.cash_accounts_users.count({ where: { id_user: token.id } });
+    const total = await prisma.cash_accounts_users.count({ where: { id_user: req.token.id } });
 
     return res.json({
       status: "OK", message: {
