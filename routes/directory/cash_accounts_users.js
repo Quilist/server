@@ -14,7 +14,11 @@ router.get("/", async (req, res, next) => {
       take: limit,
       where: { id_user: req.token.id },
       include: {
-        cash_account: true
+        cash_account: {
+          include: {
+            cash_accounts_balance: true,
+          }
+        }
       }
     });
 
