@@ -96,18 +96,18 @@ router.post("/add", async (req, res) => {
             let tSum = 0, tQnt = 0;
             if(buySell.type == 'sell') {
               tSum = parseFloat( p.price ) - parseFloat( product.sum );
-              tQnt = Number( p.number ) -  Number( product.qnt );
+              tQnt = Number( p.qnt ) -  Number( product.qnt );
             }
             if(buySell.type == 'buy') {
               tSum = parseFloat( p.price ) + parseFloat( product.sum );
-              tQnt = Number( p.number ) +  Number( product.qnt );
+              tQnt = Number( p.qnt ) +  Number( product.qnt );
             }
 
-            return await prisma.products_leftover.update({ data: { price: tSum, number: tQnt }, where: { id: p.id } });
+            return await prisma.products_leftover.update({ data: { price: tSum, qnt: tQnt }, where: { id: p.id } });
           } else {
             return await prisma.products_leftover.create({
               data: {
-                number: product.qnt,
+                qnt: product.qnt,
                 storehouse_id: buySell.storehouse_id,
                 currency_id: buySell.currency_id,
                 product_id: product.product_id,
@@ -240,14 +240,14 @@ router.post("/:id/remove", async (req, res) => {
         let tSum = 0, tQnt = 0;
         if(buySell.type == 'sell') {
           tSum = parseFloat( p.price ) + parseFloat( product.sum );
-          tQnt = Number( p.number ) +  Number( product.qnt );
+          tQnt = Number( p.qnt ) +  Number( product.qnt );
         }
         if(buySell.type == 'buy') {
           tSum = parseFloat( p.price ) - parseFloat( product.sum );
-          tQnt = Number( p.number ) -  Number( product.qnt );
+          tQnt = Number( p.qnt ) -  Number( product.qnt );
         }
 
-        return await prisma.products_leftover.update({ data: { price: tSum, number: tQnt }, where: { id: p.id } });
+        return await prisma.products_leftover.update({ data: { price: tSum, qnt: tQnt }, where: { id: p.id } });
       }
     })
     await Promise.all(createProductLeftoverPromises)

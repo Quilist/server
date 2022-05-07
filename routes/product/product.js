@@ -19,7 +19,8 @@ router.get("/", (req, res) => {
           include: {
             currency: true
           }
-        }
+        },
+        leftovers: true,
       },
     })
         .then(async (result) => {

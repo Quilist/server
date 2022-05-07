@@ -414,7 +414,7 @@ model products {
   vendor_code      Int?
   supplier         suppliers?          @relation(fields: [supplier_id], references: [id])
   supplier_id      Int?
-  qnt              Int?                @default(0)
+  min_stock        Int?                @default(0)
   price            Decimal?            @db.Decimal(15, 2)
   note             String?             @db.Text
   created_at       String
