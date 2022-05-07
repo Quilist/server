@@ -10,15 +10,20 @@ router.get("/", (req, res) => {
     prisma.products.findMany({
       skip: limit * (page - 1), take: limit,
       where: {
+        id_user: req.token.id,
         parent_id: null
       },
       include: {
         measure: true,
-        prices: true
+        prices: {
+          include: {
+            currency: true
+          }
+        }
       },
     })
         .then(async (result) => {
-            const total = await prisma.products.count();
+            const total = await prisma.products.count({where: {id_user: req.token.id}});
 
             res.json({
                 status: "OK", message: {

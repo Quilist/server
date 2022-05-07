@@ -80,7 +80,7 @@ router.post("/add", async (req, res) => {
       //---
 
 
-      if(buySell.type_doc == 'order') {
+      if(['purchase', 'sale'].includes(buySell.type_doc)) {
         //--- adjust storehouse balances
         const createProductLeftoverPromises = productData.map(async (product) => {
           const p = await prisma.products_leftover.findUnique({
@@ -168,7 +168,11 @@ router.get("/:id", (req, res) => {
       id: Number(req.params.id)
     },
     include: {
-      products: true,
+      products: {
+        include: {
+          product: true
+        }
+      },
     },
   })
     .then(async (result) => {
@@ -192,7 +196,7 @@ router.post("/:id/remove", async (req, res) => {
       products: true
     }
   });
-  if(buySell.type_doc == 'order') {
+  if(['purchase', 'sale'].includes(buySell.type_doc)) {
     if(buySell.type == 'sell') {
       const client = await prisma.clients.findUnique({
         where: {
