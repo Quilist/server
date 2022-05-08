@@ -3,13 +3,13 @@ const fetch = require('node-fetch');
 
 const config = require("../../config.json");
 
-const merchant = new Merchant({
-    id: config.privat24.id,
-    password: config.privat24.password,
-    country: 'UA'
-});
+async function individualInfo(card, id, pass) {
+    const merchant = new Merchant({
+        id: id,
+        password: pass,
+        country: 'UA'
+    });
 
-async function individualInfo(card) {
     const res = await merchant.balance(card);
     const object = JSON.parse(res);
 
