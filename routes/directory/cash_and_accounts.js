@@ -32,18 +32,17 @@ router.get("/", (req, res) => {
       setTimeout(() => map.delete(req.token.id), 10000);
 
       const items = await Promise.all(result.map(async (elem) => {
-        const stream = JSON.parse(JSON.stringify(elem.stream) !== "{}" ? elem.stream : "{}")
 
-        if (stream.privat24?.card && User === 0) {
-          const info = await privat24.individualInfo(stream.privat24.card);
+        if (elem.privat24?.card && User === 0) {
+          const info = await privat24.individualInfo(elem.privat24.card, elem.privat24.merchant_id, elem.privat24.merchant_pass);
 
           elem.cash_accounts_balance[0].balance = info.balance;
         }
 
-        if (stream.privat24?.acc && User === 0) {
-          const info = await privat24.entityInfo(stream.privat24.id, stream.privat24.token)
+        if (elem.privat24?.acc && User === 0) {
+          const info = await privat24.entityInfo(elem.privat24.id, elem.privat24.token)
 
-          const index = info.findIndex(data => data.acc === stream.privat24.acc);
+          const index = info.findIndex(data => data.acc === elem.privat24.acc);
 
           if (index !== -1) elem.cash_accounts_balance[0].balance = info[index].balanceIn;
         }
@@ -74,19 +73,21 @@ router.post("/add", async (req, res) => {
     updated_at: dateMs
   }
 
-  const { card_number, acc, balance, currency, id, token } = req.body.stream;
+  const { card_number, acc, balance, currency, id, token, merchant_id, merchant_pass } = req.body.stream;
 
   try {
 
     if (card_number) {
 
-      const info = await privat24.individualInfo(card_number);
+      const info = await privat24.individualInfo(card_number, merchant_id, merchant_pass);
       const pCurrency = await prisma.currency.findMany({ where: { name: info.card.currency, id_user: req.token.id } });
 
       data.type_order = "account";
       data.stream = JSON.stringify({
         privat24: {
-          card: card_number
+          card: card_number,
+          merchant_id: merchant_id,
+          merchant_pass: merchant_pass
         }
       });
 
