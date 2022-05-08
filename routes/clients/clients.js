@@ -9,7 +9,7 @@ router.get("/", (req, res) => {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 25;
 
-    prisma.clients.findMany({ skip: limit * (page - 1), take: limit })
+    prisma.clients.findMany({ skip: limit * (page - 1), take: limit, where: { id_user: req.token.id } })
         .then(async (result) => {
 
             for (const index in result) {
@@ -34,7 +34,7 @@ router.get("/", (req, res) => {
 
 // добавление клиента
 router.post("/add", (req, res) => {
-    let { name, mobile, mail } = req.body;
+    const { name, mobile, mail } = req.body;
 
     if (name.length < 3) return res.json({ status: "error", message: "incorrect name" });
 
