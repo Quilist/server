@@ -14,9 +14,16 @@ const clientsRouter = require("./clients/clients");
 
 const cashAccountRouter = require("./directory/cash_and_accounts");
 const moneyRouter = require("./money/money");
-const productRouter = require("./product/product");
 const buySellRouter = require("./buySell/buySell");
 
+const productRouter = require("./product/product");
+const productPostingRouter = require("./product/product_posting");
+const productImportRouter = require("./product/product_import");
+const productMovingRouter = require("./product/product_moving");
+const productWriteOffRouter = require("./product/product_write_off");
+
+const manufactureRouter = require("./manufacture/manufacture");
+const allMoveRouter = require("./allMove/allMove");
 /*
  * Роуты.
  *
@@ -55,7 +62,16 @@ fs.readdir('./routes/directory', (err, files) => {
 
 router.use("/cash_accounts", cashAccountRouter);
 router.use("/money", moneyRouter);
-router.use("/products", productRouter);
 router.use("/buy_sell", buySellRouter);
+
+router.use("/products", productRouter);
+router.use("/products_posting", productPostingRouter);
+router.use("/products_write_off", productWriteOffRouter);
+router.use("/products_moving", productMovingRouter);
+router.use("/products_import", productImportRouter);
+
+router.use("/manufacture", manufactureRouter);
+router.use("/all_moves", allMoveRouter);
+
 
 module.exports = router;
