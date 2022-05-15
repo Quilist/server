@@ -8,47 +8,55 @@ datasource db {
 }
 
 model User {
-  id                  Int                   @id @default(autoincrement())
-  acc                 String?
-  f_name              String?
-  s_name              String?
-  company             String?
-  e_mail              String                @unique
-  phone               String?
-  username            String?
-  pass                String?
-  status              Int                   @default(1)
-  role                Int                   @default(1)
-  google              String?
-  facebook            String?
-  address             String?
-  notes               String?
-  created_at          String
-  updated_at          String
-  deleted_at          String?
-  products            products[]
-  banks_details       banks_details[]
-  cash_accounts       cash_accounts[]
-  Client              clients[]
-  CurrencyExchange    currency_exchange[]
-  MovingMoney         moving_money[]
-  Employee            employees[]
-  Expenditure         expenditure[]
-  IncomeItem          income_items[]
-  LegalEntity         legal_entites[]
-  Measure             measure[]
-  Pay                 pay[]
-  PayType             pay_type[]
-  StoreHouse          storehouse[]
-  Supplier            suppliers[]
-  TypePrice           type_price[]
-  UserCurrency        user_currencies[]
-  products_groups     products_groups[]
-  cash_accounts_users cash_accounts_users[]
-  products_colors     products_colors[]
-  products_sizes      products_sizes[]
-  buy_sell            buy_sell[]
-  buy_sell_product    buy_sell_product[]
+  id                         Int                          @id @default(autoincrement())
+  acc                        String?
+  f_name                     String?
+  s_name                     String?
+  company                    String?
+  e_mail                     String                       @unique
+  phone                      String?
+  username                   String?
+  pass                       String?
+  status                     Int                          @default(1)
+  role                       Int                          @default(1)
+  google                     String?
+  facebook                   String?
+  address                    String?
+  notes                      String?
+  created_at                 String
+  updated_at                 String
+  deleted_at                 String?
+  products                   products[]
+  banks_details              banks_details[]
+  cash_accounts              cash_accounts[]
+  Client                     clients[]
+  CurrencyExchange           currency_exchange[]
+  MovingMoney                moving_money[]
+  Employee                   employees[]
+  Expenditure                expenditure[]
+  IncomeItem                 income_items[]
+  LegalEntity                legal_entites[]
+  Measure                    measure[]
+  Pay                        pay[]
+  PayType                    pay_type[]
+  StoreHouse                 storehouse[]
+  Supplier                   suppliers[]
+  TypePrice                  type_price[]
+  UserCurrency               user_currencies[]
+  products_groups            products_groups[]
+  cash_accounts_users        cash_accounts_users[]
+  products_colors            products_colors[]
+  products_sizes             products_sizes[]
+  buy_sell                   buy_sell[]
+  buy_sell_product           buy_sell_product[]
+  products_import            products_import[]
+  products_import_product    products_import_product[]
+  products_moving            products_moving[]
+  products_moving_product    products_moving_product[]
+  products_write_off         products_write_off[]
+  products_write_off_product products_write_off_product[]
+  products_posting           products_posting[]
+  products_posting_product   products_posting_product[]
 }
 
 //Reference
@@ -70,6 +78,8 @@ model currency {
   products_leftover        products_leftover[]
   MovingMoney              moving_money[]
   buy_sell                 buy_sell[]
+  products_import          products_import[]
+  products_posting         products_posting[]
 }
 
 model banks_details {
@@ -85,54 +95,68 @@ model banks_details {
 }
 
 model expenditure {
-  id         Int    @id @default(autoincrement())
-  user       User?  @relation(fields: [id_user], references: [id])
-  id_user    Int
-  name       String
-  created_at String
-  updated_at String
+  id                 Int                  @id @default(autoincrement())
+  user               User?                @relation(fields: [id_user], references: [id])
+  id_user            Int
+  name               String
+  created_at         String
+  updated_at         String
+  products_write_off products_write_off[]
 }
 
 model income_items {
-  id         Int    @id @default(autoincrement())
-  user       User?  @relation(fields: [id_user], references: [id])
-  id_user    Int
-  name       String
-  created_at String
-  updated_at String
-}
-
-model measure {
   id               Int                @id @default(autoincrement())
   user             User?              @relation(fields: [id_user], references: [id])
   id_user          Int
   name             String
   created_at       String
   updated_at       String
-  products         products[]
-  buy_sell_product buy_sell_product[]
+  products_posting products_posting[]
+  products_import  products_import[]
+}
+
+model measure {
+  id                         Int                          @id @default(autoincrement())
+  user                       User?                        @relation(fields: [id_user], references: [id])
+  id_user                    Int
+  name                       String
+  created_at                 String
+  updated_at                 String
+  products                   products[]
+  buy_sell_product           buy_sell_product[]
+  products_import_product    products_import_product[]
+  products_moving_product    products_moving_product[]
+  products_write_off_product products_write_off_product[]
+  products_posting_product   products_posting_product[]
 }
 
 model storehouse {
-  id                Int                 @id @default(autoincrement())
-  user              User?               @relation(fields: [id_user], references: [id])
-  id_user           Int
-  name              String
-  created_at        String
-  updated_at        String
-  products_leftover products_leftover[]
-  buy_sell          buy_sell[]
+  id                        Int                  @id @default(autoincrement())
+  user                      User?                @relation(fields: [id_user], references: [id])
+  id_user                   Int
+  name                      String
+  created_at                String
+  updated_at                String
+  products_leftover         products_leftover[]
+  buy_sell                  buy_sell[]
+  products_moving_sender    products_moving[]    @relation("storehouseSender")
+  products_moving_consignee products_moving[]    @relation("storehouseConsignee")
+  products_import           products_import[]
+  products_write_off        products_write_off[]
+  products_posting          products_posting[]
 }
 
 model type_price {
-  id             Int              @id @default(autoincrement())
-  user           User?            @relation(fields: [id_user], references: [id])
-  id_user        Int
-  name           String
-  created_at     String
-  updated_at     String
-  products_price products_price[]
-  buy_sell       buy_sell[]
+  id               Int                @id @default(autoincrement())
+  user             User?              @relation(fields: [id_user], references: [id])
+  id_user          Int
+  name             String
+  created_at       String
+  updated_at       String
+  products_price   products_price[]
+  buy_sell         buy_sell[]
+  products_import  products_import[]
+  products_posting products_posting[]
 }
 
 //Cash and accounts
@@ -204,8 +228,8 @@ model clients {
   duty       String?
   group      String?
   notes      String?    @db.Text
-  debit      Decimal    @db.Decimal(9, 2) @default(0)
-  credit     Decimal    @db.Decimal(9, 2) @default(0)
+  debit      Decimal    @default(0) @db.Decimal(9, 2)
+  credit     Decimal    @default(0) @db.Decimal(9, 2)
   created_at String
   updated_at String
   deleted_at String?
@@ -341,8 +365,8 @@ model suppliers {
   code_nds   String?
   nds        Boolean    @default(false)
   note       String?    @db.Text
-  debit      Decimal    @db.Decimal(9, 2) @default(0)
-  credit     Decimal    @db.Decimal(9, 2) @default(0)
+  debit      Decimal    @default(0) @db.Decimal(9, 2)
+  credit     Decimal    @default(0) @db.Decimal(9, 2)
   created_at String
   updated_at String
   deleted_at String?
@@ -396,35 +420,39 @@ model products_sizes {
 }
 
 model products {
-  id               Int                 @id @default(autoincrement())
-  user             User?               @relation(fields: [id_user], references: [id])
-  id_user          Int
-  parent_id        Int?
-  type             String
-  name             String
-  group            products_groups?    @relation(fields: [group_id], references: [id])
-  group_id         Int?
-  measure          measure?            @relation(fields: [measure_id], references: [id])
-  measure_id       Int?
-  color            products_colors?    @relation(fields: [color_id], references: [id])
-  color_id         Int?
-  size             products_sizes?     @relation(fields: [size_id], references: [id])
-  size_id          Int?
-  barcode          Int?
-  vendor_code      Int?
-  supplier         suppliers?          @relation(fields: [supplier_id], references: [id])
-  supplier_id      Int?
-  min_stock        Int?                @default(0)
-  price            Decimal?            @db.Decimal(15, 2)
-  note             String?             @db.Text
-  created_at       String
-  updated_at       String
-  deleted_at       String?
-  prices           products_price[]
-  leftovers        products_leftover[]
-  childs           products_childs[]   @relation("ProductChild")
-  childs_from      products_childs[]   @relation("ProductFromChild")
-  buy_sell_product buy_sell_product[]
+  id                         Int                          @id @default(autoincrement())
+  user                       User?                        @relation(fields: [id_user], references: [id])
+  id_user                    Int
+  parent_id                  Int?
+  type                       String
+  name                       String
+  group                      products_groups?             @relation(fields: [group_id], references: [id])
+  group_id                   Int?
+  measure                    measure?                     @relation(fields: [measure_id], references: [id])
+  measure_id                 Int?
+  color                      products_colors?             @relation(fields: [color_id], references: [id])
+  color_id                   Int?
+  size                       products_sizes?              @relation(fields: [size_id], references: [id])
+  size_id                    Int?
+  barcode                    Int?
+  vendor_code                Int?
+  supplier                   suppliers?                   @relation(fields: [supplier_id], references: [id])
+  supplier_id                Int?
+  min_stock                  Int?                         @default(0)
+  price                      Decimal?                     @db.Decimal(15, 2)
+  note                       String?                      @db.Text
+  created_at                 String
+  updated_at                 String
+  deleted_at                 String?
+  prices                     products_price[]
+  leftovers                  products_leftover[]
+  childs                     products_childs[]            @relation("ProductChild")
+  childs_from                products_childs[]            @relation("ProductFromChild")
+  buy_sell_product           buy_sell_product[]
+  products_import_product    products_import_product[]
+  products_moving_product    products_moving_product[]
+  products_write_off_product products_write_off_product[]
+  products_posting_product   products_posting_product[]
 }
 
 model products_childs {
@@ -462,38 +490,179 @@ model products_leftover {
   currency_id   Int
   created_at    String
   updated_at    String
+
   @@unique(fields: [product_id, storehouse_id])
 }
 
+model products_import {
+  id              Int                       @id @default(autoincrement())
+  number          Int
+  user            User?                     @relation(fields: [id_user], references: [id])
+  id_user         Int
+  income_items    income_items?             @relation(fields: [income_items_id], references: [id], onDelete: Cascade)
+  income_items_id Int
+  storehouse      storehouse?               @relation(fields: [storehouse_id], references: [id], onDelete: Cascade)
+  storehouse_id   Int
+  type_price      type_price?               @relation(fields: [type_price_id], references: [id], onDelete: Cascade)
+  type_price_id   Int
+  currency        currency?                 @relation(fields: [currency_id], references: [id])
+  currency_id     Int
+  sum             Decimal                   @db.Decimal(9, 2)
+  created_at      String
+  updated_at      String
+  products        products_import_product[]
+}
+
+model products_import_product {
+  id                 Int              @id @default(autoincrement())
+  user               User?            @relation(fields: [id_user], references: [id])
+  id_user            Int
+  products_import    products_import? @relation(fields: [products_import_id], references: [id], onDelete: Cascade)
+  products_import_id Int
+  product            products?        @relation(fields: [product_id], references: [id])
+  product_id         Int
+  measure            measure?         @relation(fields: [measure_id], references: [id])
+  measure_id         Int?
+  type               String
+  qnt                Int
+  price              Decimal          @db.Decimal(9, 2)
+  sum                Decimal          @db.Decimal(9, 2)
+  created_at         String
+  updated_at         String
+}
+
+model products_moving {
+  id                      Int                       @id @default(autoincrement())
+  number                  Int
+  user                    User?                     @relation(fields: [id_user], references: [id])
+  id_user                 Int
+  storehouse_sender       storehouse?               @relation("storehouseSender", fields: [storehouse_sender_id], references: [id], onDelete: Cascade)
+  storehouse_sender_id    Int
+  storehouse_consignee    storehouse?               @relation("storehouseConsignee", fields: [storehouse_consignee_id], references: [id], onDelete: Cascade)
+  storehouse_consignee_id Int
+  sum                     Decimal                   @db.Decimal(9, 2)
+  created_at              String
+  updated_at              String
+  products                products_moving_product[]
+}
+
+model products_moving_product {
+  id                 Int              @id @default(autoincrement())
+  user               User?            @relation(fields: [id_user], references: [id])
+  id_user            Int
+  products_moving    products_moving? @relation(fields: [products_moving_id], references: [id], onDelete: Cascade)
+  products_moving_id Int
+  product            products?        @relation(fields: [product_id], references: [id])
+  product_id         Int
+  measure            measure?         @relation(fields: [measure_id], references: [id])
+  measure_id         Int?
+  type               String
+  qnt                Int
+  price              Decimal          @db.Decimal(9, 2)
+  sum                Decimal          @db.Decimal(9, 2)
+  created_at         String
+  updated_at         String
+}
+
+model products_write_off {
+  id             Int                          @id @default(autoincrement())
+  number         Int
+  user           User?                        @relation(fields: [id_user], references: [id])
+  id_user        Int
+  expenditure    expenditure?                 @relation(fields: [expenditure_id], references: [id], onDelete: Cascade)
+  expenditure_id Int
+  storehouse     storehouse?                  @relation(fields: [storehouse_id], references: [id], onDelete: Cascade)
+  storehouse_id  Int
+  sum            Decimal                      @db.Decimal(9, 2)
+  created_at     String
+  updated_at     String
+  products       products_write_off_product[]
+}
+
+model products_write_off_product {
+  id                    Int                 @id @default(autoincrement())
+  user                  User?               @relation(fields: [id_user], references: [id])
+  id_user               Int
+  products_write_off    products_write_off? @relation(fields: [products_write_off_id], references: [id], onDelete: Cascade)
+  products_write_off_id Int
+  product               products?           @relation(fields: [product_id], references: [id])
+  product_id            Int
+  measure               measure?            @relation(fields: [measure_id], references: [id])
+  measure_id            Int?
+  type                  String
+  qnt                   Int
+  price                 Decimal             @db.Decimal(9, 2)
+  sum                   Decimal             @db.Decimal(9, 2)
+  created_at            String
+  updated_at            String
+}
+
+model products_posting {
+  id              Int                        @id @default(autoincrement())
+  number          Int
+  user            User?                      @relation(fields: [id_user], references: [id])
+  id_user         Int
+  income_items    income_items?              @relation(fields: [income_items_id], references: [id], onDelete: Cascade)
+  income_items_id Int
+  storehouse      storehouse?                @relation(fields: [storehouse_id], references: [id], onDelete: Cascade)
+  storehouse_id   Int
+  type_price      type_price?                @relation(fields: [type_price_id], references: [id], onDelete: Cascade)
+  type_price_id   Int
+  currency        currency?                  @relation(fields: [currency_id], references: [id])
+  currency_id     Int
+  sum             Decimal                    @db.Decimal(9, 2)
+  created_at      String
+  updated_at      String
+  products        products_posting_product[]
+}
+
+model products_posting_product {
+  id                  Int               @id @default(autoincrement())
+  user                User?             @relation(fields: [id_user], references: [id])
+  id_user             Int
+  products_posting    products_posting? @relation(fields: [products_posting_id], references: [id], onDelete: Cascade)
+  products_posting_id Int
+  product             products?         @relation(fields: [product_id], references: [id])
+  product_id          Int
+  measure             measure?          @relation(fields: [measure_id], references: [id])
+  measure_id          Int?
+  type                String
+  qnt                 Int
+  price               Decimal           @db.Decimal(9, 2)
+  sum                 Decimal           @db.Decimal(9, 2)
+  created_at          String
+  updated_at          String
+}
+
 model buy_sell {
-  id               Int                @id @default(autoincrement())
-  user             User?              @relation(fields: [id_user], references: [id])
-  id_user          Int
-  number           Int
-  type             String
-  type_doc         String
-  status           String
-  supplier         suppliers?         @relation(fields: [supplier_id], references: [id])
-  supplier_id      Int?
-  client           clients?           @relation(fields: [client_id], references: [id])
-  client_id        Int?
-  storehouse       storehouse?        @relation(fields: [storehouse_id], references: [id], onDelete: Cascade)
-  storehouse_id    Int
-  legal_entity     legal_entites?     @relation(fields: [legal_entity_id], references: [id])
-  legal_entity_id  Int?
-  seller_id        Int?
-  courier_id       Int?
-  type_price       type_price?        @relation(fields: [type_price_id], references: [id], onDelete: Cascade)
-  type_price_id    Int
-  currency         currency?          @relation(fields: [currency_id], references: [id])
-  currency_id      Int
-  sum              Decimal            @db.Decimal(9, 2)
-  sum_paid         Decimal            @db.Decimal(9, 2) @default(0)
-  note             String?
-  created_at       String
-  updated_at       String
-  deleted_at       String?
-  products         buy_sell_product[]
+  id              Int                @id @default(autoincrement())
+  user            User?              @relation(fields: [id_user], references: [id])
+  id_user         Int
+  number          Int
+  type            String
+  type_doc        String
+  status          String
+  supplier        suppliers?         @relation(fields: [supplier_id], references: [id])
+  supplier_id     Int?
+  client          clients?           @relation(fields: [client_id], references: [id])
+  client_id       Int?
+  storehouse      storehouse?        @relation(fields: [storehouse_id], references: [id], onDelete: Cascade)
+  storehouse_id   Int
+  legal_entity    legal_entites?     @relation(fields: [legal_entity_id], references: [id])
+  legal_entity_id Int?
+  seller_id       Int?
+  courier_id      Int?
+  type_price      type_price?        @relation(fields: [type_price_id], references: [id], onDelete: Cascade)
+  type_price_id   Int
+  currency        currency?          @relation(fields: [currency_id], references: [id])
+  currency_id     Int
+  sum             Decimal            @db.Decimal(9, 2)
+  sum_paid        Decimal            @default(0) @db.Decimal(9, 2)
+  note            String?
+  created_at      String
+  updated_at      String
+  deleted_at      String?
+  products        buy_sell_product[]
 }
 
 model buy_sell_product {

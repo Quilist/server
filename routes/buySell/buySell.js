@@ -187,6 +187,29 @@ router.get("/:id", (req, res) => {
     .catch(err => res.json({ status: "error", message: err.message }));
 });
 
+router.post("/:id/edit", async (req, res) => {
+  const dateMs = String(Date.now());
+
+  const products = req.body.products;
+  delete req.body.products;
+
+  const data = {
+    ...req.body,
+    updated_at: dateMs
+  }
+
+  try {
+    const buySell = await prisma.buy_sell.update({ data: { ...data }, where: { id: Number(req.params.id) } });
+
+    res.json({ status: "OK",
+      message: "Success"})
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+
+});
+
 router.post("/:id/remove", async (req, res) => {
   const buySell = await prisma.buy_sell.findUnique({
     where: {
