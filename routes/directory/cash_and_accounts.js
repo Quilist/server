@@ -83,7 +83,7 @@ router.post("/add", async (req, res) => {
     if (card_number) {
       const info = await privat24.individualInfo(card_number, merchant_id, merchant_pass);
       // const currency
-
+      
       data.type_order = "account";
       data.stream = {
         privat24: {
@@ -92,7 +92,7 @@ router.post("/add", async (req, res) => {
           merchant_pass: merchant_pass
         }
       };
-
+      console.log(info)
       pay.push(...info.extract);
 
       req.body.stream.currency = info.balance.card.currency;
