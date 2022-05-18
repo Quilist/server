@@ -151,7 +151,7 @@ router.post("/add", async (req, res) => {
     if (pay.length) {
       const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
 
-      const subData = pay.map(elem => {
+      const subData = pay.map(async elem => {
         const date = String(Date.parse(`${elem.trandate} ${elem.trantime}`));
 
         const payInfo = elem.cardamount.split(" ");
