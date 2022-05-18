@@ -182,6 +182,7 @@ router.post("/add", async (req, res) => {
 
     res.json({ status: "OK", message: "Success" });
   } catch (e) {
+    console.log(e.message)
     res.json({ status: "error", message: e.message });
   }
 });
