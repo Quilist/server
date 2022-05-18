@@ -92,7 +92,7 @@ router.post("/add", async (req, res) => {
           merchant_pass: merchant_pass
         }
       };
-      console.log(info)
+      
       pay.push(...info.extract);
 
       req.body.stream.currency = info.balance.card.currency;
@@ -178,7 +178,6 @@ router.post("/add", async (req, res) => {
 
     res.json({ status: "OK", message: "Success" });
   } catch (e) {
-    console.log(e)
     res.json({ status: "error", message: e.message });
   }
 });
