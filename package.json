@@ -10,6 +10,7 @@
     "check-password-strength": "^2.0.5",
     "cookie-parser": "~1.4.4",
     "crypto": "^1.0.1",
+    "date-and-time": "^2.3.1",
     "express": "~4.16.1",
     "express-brute": "^1.0.1",
     "express-myconnection": "^1.0.4",
