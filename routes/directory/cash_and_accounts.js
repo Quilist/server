@@ -164,7 +164,7 @@ router.post("/add", async (req, res) => {
           type_order: "bank_account",
           created_at: date,
           updated_at: date,
-          payments: {
+          Payments: {
             create: {
               currency_id: currency[index].id,
               amount: Number(payInfo[0]),
