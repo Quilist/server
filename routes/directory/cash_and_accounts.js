@@ -93,7 +93,7 @@ router.post("/add", async (req, res) => {
         }
       };
       
-      pay.push(...info.extract);
+      Array.isArray(info.extract) ? pay.push(...info.extract) : pay.push(info.extract);
 
       req.body.stream.currency = info.balance.card.currency;
     }
