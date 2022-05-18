@@ -27,7 +27,7 @@ router.get("/", (req, res) => {
       const total = await prisma.cash_accounts.count({ where: { id_user: req.token.id } });
 
       const user = map.get(req.token.id);
-      map.set(req.token.id, User + 1);
+      map.set(req.token.id, user + 1);
       setTimeout(() => map.delete(req.token.id), 10000);
 
       const items = await Promise.all(result.map(async (elem) => {
