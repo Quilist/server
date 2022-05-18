@@ -151,13 +151,13 @@ router.post("/add", async (req, res) => {
     if (pay.length) {
       const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
 
-      const subData = pay.map(async elem => {
+      const subData = pay.map(elem => {
         const date = String(Date.parse(`${elem.trandate} ${elem.trantime}`));
 
         const payInfo = elem.cardamount.split(" ");
         const index = currency.findIndex(elem => elem.name === payInfo[1]);
 
-        const subData = {
+        return {
           id_user: req.token.id,
           number: 1,
           cash_account_id: cashAccount.id,
@@ -175,9 +175,9 @@ router.post("/add", async (req, res) => {
             }
           }
         }
-
-        await prisma.pay.create({ data: subData });
       });
+
+      const payData = await prisma.pay.createMany({ data: subData, skipDuplicates: false })
     }
 
     res.json({ status: "OK", message: "Success" });
