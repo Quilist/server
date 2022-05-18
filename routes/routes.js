@@ -24,6 +24,8 @@ const productWriteOffRouter = require("./product/product_write_off");
 
 const manufactureRouter = require("./manufacture/manufacture");
 const allMoveRouter = require("./allMove/allMove");
+
+const userSettingsRouter = require("./user/settings");
 /*
  * Роуты.
  *
@@ -72,6 +74,8 @@ router.use("/products_import", productImportRouter);
 
 router.use("/manufacture", manufactureRouter);
 router.use("/all_moves", allMoveRouter);
+router.use("/user_settings", userSettingsRouter);
+
 
 
 module.exports = router;

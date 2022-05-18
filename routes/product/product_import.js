@@ -123,6 +123,10 @@ router.post("/:id/edit", async (req, res) => {
 
   const products = req.body.products;
   delete req.body.products;
+  delete req.body.currency;
+  delete req.body.income_items;
+  delete req.body.storehouse;
+  delete req.body.type_price;
 
   const data = {
     ...req.body,
