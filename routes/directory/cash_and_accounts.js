@@ -26,25 +26,26 @@ router.get("/", (req, res) => {
     .then(async (result) => {
       const total = await prisma.cash_accounts.count({ where: { id_user: req.token.id } });
 
-      const User = map.get(req.token.id) || 0;
+      const user = map.get(req.token.id);
       map.set(req.token.id, User + 1);
-
       setTimeout(() => map.delete(req.token.id), 10000);
 
       const items = await Promise.all(result.map(async (elem) => {
 
-        if (elem.privat24?.card && User === 0) {
-          const info = await privat24.individualInfo(elem.privat24.card, elem.privat24.merchant_id, elem.privat24.merchant_pass);
+        if (user === 0) {
+          if (elem.privat24?.card) {
+            const info = await privat24.individualInfo(elem.privat24.card, elem.privat24.merchant_id, elem.privat24.merchant_pass);
 
-          elem.cash_accounts_balance[0].balance = info.balance;
-        }
+            elem.cash_accounts_balance[0].balance = info.balance.balance;
+          }
 
-        if (elem.privat24?.acc && User === 0) {
-          const info = await privat24.entityInfo(elem.privat24.id, elem.privat24.token)
+          if (elem.privat24?.acc) {
+            const info = await privat24.entityInfo(elem.privat24.id, elem.privat24.token)
 
-          const index = info.findIndex(data => data.acc === elem.privat24.acc);
+            const index = info.findIndex(data => data.acc === elem.privat24.acc);
 
-          if (index !== -1) elem.cash_accounts_balance[0].balance = info[index].balanceIn;
+            if (index !== -1) elem.cash_accounts_balance[0].balance = info[index].balanceIn;
+          }
         }
 
         return elem;
@@ -73,66 +74,41 @@ router.post("/add", async (req, res) => {
     updated_at: dateMs
   }
 
-  const { card_number, acc, balance, currency, id, token, merchant_id, merchant_pass } = req.body.stream;
+  const { card_number, acc, balance, id, token, merchant_id, merchant_pass } = req.body.stream;
 
   try {
+    // приват24 физ лица
+    const pay = [];
 
     if (card_number) {
-
       const info = await privat24.individualInfo(card_number, merchant_id, merchant_pass);
-      const pCurrency = await prisma.currency.findMany({ where: { name: info.card.currency, id_user: req.token.id } });
+      // const currency
 
       data.type_order = "account";
-      data.stream = JSON.stringify({
+      data.stream = {
         privat24: {
           card: card_number,
           merchant_id: merchant_id,
           merchant_pass: merchant_pass
         }
-      });
+      };
 
-      if (pCurrency.length) {
-        data.balance = [{
-          currency_id: pCurrency[0].id,
-          balance: info.balance
-        }];
-      } else {
-        const dateMs = String(Date.now());
+      pay.push(...info.extract);
 
-        const result = await prisma.currency.create({
-          data: {
-            name: info.card.currency,
-            id_user: req.token.id,
-            created_at: dateMs,
-            updated_at: dateMs
-          }
-        });
-
-        data.balance = [{
-          currency_id: result.id,
-          balance: info.balance
-        }];
-      }
+      req.body.stream.currency = info.balance.card.currency;
     }
-
+    // приват24 юр лица
     if (acc) {
-      const pCurrency = await prisma.currency.findMany({ where: { name: currency, id_user: req.token.id } });
-
       data.type_order = "account";
-      data.stream = JSON.stringify({
-        privat24: {
-          acc: acc,
-          id: id,
-          token: token
-        }
-      });
+      data.stream = { privat24: { acc: acc, id: id, token: token } };
+    }
+    // Добавление балансе, а так же проверка на существование валюты
+    if (card_number || acc) {
+      const pCurrency = await prisma.currency.findMany({ where: { name: req.body.stream.currency, id_user: req.token.id } });
 
       if (pCurrency.length) {
-        data.balance = [{
-          currency_id: pCurrency[0].id,
-          balance: balance
-        }];
-      } else {
+        data.balance = [{ currency_id: pCurrency[0].id, balance: balance }];
+      } else { // создаем валюту, если ее нет
         const dateMs = String(Date.now());
 
         const result = await prisma.currency.create({
@@ -168,6 +144,38 @@ router.post("/add", async (req, res) => {
       await prisma.cash_accounts_balance.createMany({ data: subData, skipDuplicates: false })
     }
 
+    if (pay.length) {
+      const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
+
+      const subData = pay.map(elem => {
+        const date = String(Date.parse(`${elem.trandate} ${elem.trantime}`));
+
+        const payInfo = elem.cardamount.split(" ");
+        const index = currency.findIndex(elem => elem.name === payInfo[1]);
+
+        return {
+          id_user: req.token.id,
+          number: 1,
+          cash_account_id: cashAccount.id,
+          type_order: "bank_account",
+          created_at: date,
+          updated_at: date,
+          payments: {
+            create: {
+              currency_id: currency[index].id,
+              amount: Number(payInfo[0]),
+              type_pay: "payment",
+              type_amount: "debit",
+              created_at: date,
+              updated_at: date
+            }
+          }
+        }
+      });
+
+      await prisma.pay.createMany({ data: subData, skipDuplicates: false })
+    }
+
     res.json({ status: "OK", message: "Success" });
   } catch (e) {
     res.json({ status: "error", message: e.message });
@@ -185,8 +193,10 @@ router.get("/auxiliary/data", async (req, res) => {
 });
 
 router.post("/:id/remove", async (req, res) => {
-  const cashBalance = await prisma.cash_accounts_balance.deleteMany({ where: { cash_account_id: Number(req.params.id) } });
-  const cashAccounts = await prisma.cash_accounts.delete({ where: { id: Number(req.params.id) } });
+  const id = Number(req.params.id);
+
+  const cashBalance = await prisma.cash_accounts_balance.deleteMany({ where: { cash_account_id: id } });
+  const cashAccounts = await prisma.cash_accounts.delete({ where: { id: id } });
 
   Promise.all([cashBalance, cashAccounts])
     .then(() => res.json({ status: "OK", message: "Succes" }))
