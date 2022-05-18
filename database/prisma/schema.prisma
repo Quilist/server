@@ -57,6 +57,21 @@ model User {
   products_write_off_product products_write_off_product[]
   products_posting           products_posting[]
   products_posting_product   products_posting_product[]
+  settings                   user_settings[]
+}
+
+model user_settings {
+  id              Int            @id @default(autoincrement())
+  user            User?          @relation(fields: [id_user], references: [id])
+  id_user         Int
+  currency        currency?      @relation(fields: [currency_id], references: [id])
+  currency_id     Int
+  legal_entity    legal_entites? @relation(fields: [legal_entity_id], references: [id])
+  legal_entity_id Int?
+  storehouse      storehouse?    @relation(fields: [storehouse_id], references: [id], onDelete: Cascade)
+  storehouse_id   Int
+  created_at      String
+  updated_at      String
 }
 
 //Reference
@@ -80,6 +95,7 @@ model currency {
   buy_sell                 buy_sell[]
   products_import          products_import[]
   products_posting         products_posting[]
+  user_settings            user_settings[]
 }
 
 model banks_details {
@@ -144,6 +160,7 @@ model storehouse {
   products_import           products_import[]
   products_write_off        products_write_off[]
   products_posting          products_posting[]
+  user_settings             user_settings[]
 }
 
 model type_price {
@@ -170,12 +187,12 @@ model cash_and_accounts {
 }
 
 model cash_accounts {
-  id                    Int                     @id @default(autoincrement())
-  user                  User?                   @relation(fields: [id_user], references: [id])
+  id                    Int                           @id @default(autoincrement())
+  user                  User?                         @relation(fields: [id_user], references: [id])
   id_user               Int
   name                  String?
   user_currency_id      Int?
-  banks_details         banks_details?          @relation(fields: [banks_details_id], references: [id])
+  banks_details         banks_details?                @relation(fields: [banks_details_id], references: [id])
   banks_details_id      Int?
   balanceIn             String?
   turnoverDebt          String?
@@ -183,8 +200,8 @@ model cash_accounts {
   type                  String?
   type_order            String?
   stream                Json?
-  from_moving_money     moving_money[]          @relation("FromCashAccount")
-  to_moving_money       moving_money[]          @relation("ToCashAccount")
+  from_moving_money     moving_money[]                @relation("FromCashAccount")
+  to_moving_money       moving_money[]                @relation("ToCashAccount")
   created_at            String
   updated_at            String
   deleted_at            String?
@@ -193,6 +210,7 @@ model cash_accounts {
   pay                   pay[]
   cash_accounts_balance cash_accounts_balance[]
   cash_accounts_users   cash_accounts_users[]
+  legal_entites         legal_entites_cash_accounts[]
 }
 
 model cash_accounts_balance {
@@ -294,26 +312,38 @@ model employees {
 }
 
 model legal_entites {
-  id         Int        @id @default(autoincrement())
-  user       User?      @relation(fields: [id_user], references: [id])
-  id_user    Int
-  name       String
-  mail       String?
-  site       String?
-  mobile     String?
-  account    String?
-  address    String?
-  edrpou     String?
-  inn        String?
-  legal_name String?
-  low_system String?
-  director   String?
-  nds        Boolean    @default(false)
-  created_at String
-  updated_at String
-  deleted_at String?
-  pay        pay[]
-  buy_sell   buy_sell[]
+  id            Int                           @id @default(autoincrement())
+  user          User?                         @relation(fields: [id_user], references: [id])
+  id_user       Int
+  name          String
+  mail          String?
+  site          String?
+  mobile        String?
+  account       String?
+  address       String?
+  edrpou        String?
+  inn           String?
+  legal_name    String?
+  low_system    String?
+  director      String?
+  nds           Boolean                       @default(false)
+  created_at    String
+  updated_at    String
+  deleted_at    String?
+  pay           pay[]
+  buy_sell      buy_sell[]
+  user_settings user_settings[]
+  cash_accounts legal_entites_cash_accounts[]
+}
+
+model legal_entites_cash_accounts {
+  id              Int            @id @default(autoincrement())
+  cash_account    cash_accounts? @relation(fields: [cash_account_id], references: [id])
+  cash_account_id Int
+  legal_entity    legal_entites? @relation(fields: [legal_entity_id], references: [id])
+  legal_entity_id Int?
+
+  @@unique(fields: [cash_account_id, legal_entity_id])
 }
 
 model pay {

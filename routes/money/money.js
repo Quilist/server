@@ -295,19 +295,26 @@ router.get("/auxiliary/data", async (req, res) => {
           currency: true
         }
       },
+      legal_entites: true,
     },
     where: {
       id_user: req.token.id
     }
   });
 
-  const legalEntity = await prisma.legal_entites.findMany({ where: { id_user: req.token.id } });
+  const legalEntity = await prisma.legal_entites.findMany({ where: { id_user: req.token.id }, include: { cash_accounts:true } });
   const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
+  const userSettings = await prisma.user_settings.findUnique({
+    where: {
+      id: Number(req.token.id)
+    }
+  });
 
   const data = {
     cash_accounts: cashAccount,
     legal_entites: legalEntity,
-    currencies: currency
+    currencies: currency,
+    user_settings: userSettings
   };
 
   if (type) {

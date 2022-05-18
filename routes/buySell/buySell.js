@@ -7,10 +7,26 @@ router.get("/", (req, res) => {
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 25;
 
+  let type = {};
+  if(req.query.type == 'buy') {
+    type = {
+      type: {
+        in: ['buy', 'buy_return'],
+      }
+    }
+  }
+  if(req.query.type == 'sell') {
+    type = {
+      type: {
+        in: ['sell', 'sell_return'],
+      }
+    }
+  }
   prisma.buy_sell.findMany({
     skip: limit * (page - 1), take: limit,
     where: {
-      type: req.query.type
+      id_user: req.token.id,
+      ...type
     },
     include: {
       storehouse: true,
@@ -94,24 +110,33 @@ router.post("/add", async (req, res) => {
 
           if(p) {
             let tSum = 0, tQnt = 0;
-            if(buySell.type == 'sell') {
+            if(buySell.type == 'sell' || buySell.type == 'buy_return') {
               tSum = parseFloat( p.price ) - parseFloat( product.sum );
               tQnt = Number( p.qnt ) -  Number( product.qnt );
             }
-            if(buySell.type == 'buy') {
+            if(buySell.type == 'buy' || buySell.type == 'sell_return') {
               tSum = parseFloat( p.price ) + parseFloat( product.sum );
               tQnt = Number( p.qnt ) +  Number( product.qnt );
             }
 
             return await prisma.products_leftover.update({ data: { price: tSum, qnt: tQnt }, where: { id: p.id } });
           } else {
+            let tSum = 0, tQnt = 0;
+            if(buySell.type == 'sell') {
+              tSum = 0 - parseFloat( product.sum );
+              tQnt = 0 -  Number( product.qnt );
+            }
+            if(buySell.type == 'buy') {
+              tSum = 0 + parseFloat( product.sum );
+              tQnt = 0 +  Number( product.qnt );
+            }
             return await prisma.products_leftover.create({
               data: {
-                qnt: product.qnt,
+                qnt: tQnt,
                 storehouse_id: buySell.storehouse_id,
                 currency_id: buySell.currency_id,
                 product_id: product.product_id,
-                price: product.sum,
+                price: tSum,
                 created_at: dateMs,
                 updated_at: dateMs
               }
@@ -220,28 +245,40 @@ router.post("/:id/remove", async (req, res) => {
     }
   });
   if(['purchase', 'sale'].includes(buySell.type_doc)) {
-    if(buySell.type == 'sell') {
+    if(buySell.type == 'sell' || buySell.type == 'sell_return') {
       const client = await prisma.clients.findUnique({
         where: {
           id: buySell.client_id
         }
       })
 
-      const debitSum = parseFloat( client.debit) - parseFloat( buySell.sum);
+      let debitSum = 0;
+      if(buySell.type == 'buy') {
+        debitSum = parseFloat( client.debit) - parseFloat( buySell.sum);
+      }
+      if(buySell.type == 'sell_return') {
+        debitSum = parseFloat( client.debit) + parseFloat( buySell.sum);
+      }
       const clientData = {
         debit: debitSum
       }
       await prisma.clients.update({ data: clientData, where: { id: buySell.client_id } });
     }
 
-    if(buySell.type == 'buy') {
+    if(buySell.type == 'buy' || buySell.type == 'buy_return') {
       const supplier = await prisma.suppliers.findUnique({
         where: {
           id: buySell.supplier_id
         },
       })
 
-      const debitSum = parseFloat( supplier.credit) -  parseFloat( buySell.sum);
+      let debitSum = 0;
+      if(buySell.type == 'buy') {
+        debitSum = parseFloat( supplier.credit) -  parseFloat( buySell.sum);
+      }
+      if(buySell.type == 'buy_return') {
+        debitSum = parseFloat( supplier.credit) +  parseFloat( buySell.sum);
+      }
       const supplierData = {
         credit: debitSum
       }
@@ -261,11 +298,11 @@ router.post("/:id/remove", async (req, res) => {
 
       if(p) {
         let tSum = 0, tQnt = 0;
-        if(buySell.type == 'sell') {
+        if(buySell.type == 'sell' || buySell.type == 'buy_return') {
           tSum = parseFloat( p.price ) + parseFloat( product.sum );
           tQnt = Number( p.qnt ) +  Number( product.qnt );
         }
-        if(buySell.type == 'buy') {
+        if(buySell.type == 'buy' || buySell.type == 'sell_return') {
           tSum = parseFloat( p.price ) - parseFloat( product.sum );
           tQnt = Number( p.qnt ) -  Number( product.qnt );
         }
