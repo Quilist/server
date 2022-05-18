@@ -157,14 +157,14 @@ router.post("/add", async (req, res) => {
         const payInfo = elem.cardamount.split(" ");
         const index = currency.findIndex(elem => elem.name === payInfo[1]);
 
-        return {
+        const subData = {
           id_user: req.token.id,
           number: 1,
           cash_account_id: cashAccount.id,
           type_order: "bank_account",
           created_at: date,
           updated_at: date,
-          Payments: {
+          payments: {
             create: {
               currency_id: currency[index].id,
               amount: Number(payInfo[0]),
@@ -175,9 +175,9 @@ router.post("/add", async (req, res) => {
             }
           }
         }
-      });
 
-      await prisma.pay.createMany({ data: subData, skipDuplicates: false })
+        await prisma.pay.create({ data: subData });
+      });
     }
 
     res.json({ status: "OK", message: "Success" });
