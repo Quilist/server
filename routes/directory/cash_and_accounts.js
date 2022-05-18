@@ -96,6 +96,7 @@ router.post("/add", async (req, res) => {
       Array.isArray(info.extract) ? pay.push(...info.extract) : pay.push(info.extract);
 
       req.body.stream.currency = info.balance.card.currency;
+      req.body.stream.balance = info.balance.balance
     }
     // приват24 юр лица
     if (acc) {
@@ -104,10 +105,13 @@ router.post("/add", async (req, res) => {
     }
     // Добавление балансе, а так же проверка на существование валюты
     if (card_number || acc) {
-      const pCurrency = await prisma.currency.findMany({ where: { name: req.body.stream.currency, id_user: req.token.id } });
+      const currency = req.body.stream.currency;
+      const amount = req.body.stream.balance || balance;
+
+      const pCurrency = await prisma.currency.findMany({ where: { name: currency, id_user: req.token.id } });
 
       if (pCurrency.length) {
-        data.balance = [{ currency_id: pCurrency[0].id, balance: balance }];
+        data.balance = [{ currency_id: pCurrency[0].id, balance: amount }];
       } else { // создаем валюту, если ее нет
         const dateMs = String(Date.now());
 
@@ -122,7 +126,7 @@ router.post("/add", async (req, res) => {
 
         data.balance = [{
           currency_id: result.id,
-          balance: balance
+          balance:  amount
         }];
       }
     }
