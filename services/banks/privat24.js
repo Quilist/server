@@ -1,19 +1,22 @@
 const Merchant = require('privatbank-api');
+const date = require('date-and-time');
 const fetch = require('node-fetch');
 
-const config = require("../../config.json");
-
 async function individualInfo(card, id, pass) {
-    const merchant = new Merchant({
-        id: id,
-        password: pass,
-        country: 'UA'
-    });
+    const merchant = new Merchant({ id: id, password: pass, country: 'UA' });
 
-    const res = await merchant.balance(card);
-    const object = JSON.parse(res);
+    const dateNow = date.format(new Date(), 'DD.MM.YYYY')
 
-    return object.response.data.info.cardbalance;
+    const balance = await merchant.balance(card);
+    const extract = await merchant.statement(card, "01.01.1970", dateNow);
+
+    const balanceObj = JSON.parse(balance);
+    const extractObj = JSON.parse(extract);
+
+    return {
+        balance: balanceObj.response.data.info.cardbalance,
+        extract: extractObj.response.data.info.statements.statement
+    };
 }
 
 async function entityInfo(id, token) {
