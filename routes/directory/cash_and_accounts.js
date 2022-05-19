@@ -181,6 +181,7 @@ router.post("/add", async (req, res) => {
 
       for (let i = 0; i < payInfo.length; i++) payTypeInfo[i].pay_id = payInfo[i].id;
 
+      console.log(payInfo)
       await prisma.pay_type.createMany({ data: payTypeData, skipDuplicate: false });
     }
 
