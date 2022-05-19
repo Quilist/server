@@ -74,16 +74,15 @@ router.post("/add", async (req, res) => {
     updated_at: dateMs
   }
 
-  const { card_number, acc, balance, id, token, merchant_id, merchant_pass } = req.body.stream;
+  const { card_number, acc, balance, id, token, merchant_id, merchant_pass, date } = req.body.stream;
 
   try {
     // приват24 физ лица
     const pay = [];
 
     if (card_number) {
-      const info = await privat24.individualInfo(card_number, merchant_id, merchant_pass);
-      // const currency
-      
+      const info = await privat24.individualInfo(card_number, merchant_id, merchant_pass, date);
+
       data.type_order = "account";
       data.stream = {
         privat24: {
@@ -92,7 +91,7 @@ router.post("/add", async (req, res) => {
           merchant_pass: merchant_pass
         }
       };
-      
+
       Array.isArray(info.extract) ? pay.push(...info.extract) : pay.push(info.extract);
 
       req.body.stream.currency = info.balance.card.currency;
@@ -126,7 +125,7 @@ router.post("/add", async (req, res) => {
 
         data.balance = [{
           currency_id: result.id,
-          balance:  amount
+          balance: amount
         }];
       }
     }
@@ -151,11 +150,22 @@ router.post("/add", async (req, res) => {
     if (pay.length) {
       const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
 
-      const subData = pay.map(elem => {
+      const payTypeData = [];
+
+      const payData = pay.map(elem => {
         const date = String(Date.parse(`${elem.trandate} ${elem.trantime}`));
 
         const payInfo = elem.cardamount.split(" ");
         const index = currency.findIndex(elem => elem.name === payInfo[1]);
+
+        payTypeData.push({
+          currency_id: currency[index].id,
+          amount: Number(payInfo[0]),
+          type_pay: "payment",
+          type_amount: "debit",
+          created_at: date,
+          updated_at: date
+        })
 
         return {
           id_user: req.token.id,
@@ -163,21 +173,15 @@ router.post("/add", async (req, res) => {
           cash_account_id: cashAccount.id,
           type_order: "bank_account",
           created_at: date,
-          updated_at: date,
-          payments: {
-            create: {
-              currency_id: currency[index].id,
-              amount: Number(payInfo[0]),
-              type_pay: "payment",
-              type_amount: "debit",
-              created_at: date,
-              updated_at: date
-            }
-          }
+          updated_at: date
         }
       });
 
-      const payData = await prisma.pay.createMany({ data: subData, skipDuplicates: false })
+      const payInfo = await prisma.pay.createMany({ data: payData, skipDuplicates: false });
+
+      for (let i = 0; i < payInfo.length; i++) payTypeInfo[i].pay_id = payInfo[i].id;
+
+      await prisma.pay_type.createMany({ data: payTypeData, skipDuplicate: false });
     }
 
     res.json({ status: "OK", message: "Success" });
