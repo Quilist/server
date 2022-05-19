@@ -74,14 +74,14 @@ router.post("/add", async (req, res) => {
     updated_at: dateMs
   }
 
-  const { card_number, acc, balance, id, token, merchant_id, merchant_pass, date } = req.body.stream;
+  const { card_number, acc, balance, id, token, merchant_id, merchant_pass, first, second } = req.body.stream;
 
   try {
     // приват24 физ лица
     const pay = [];
 
     if (card_number) {
-      const info = await privat24.individualInfo(card_number, merchant_id, merchant_pass, date);
+      const info = await privat24.individualInfo(card_number, merchant_id, merchant_pass, { first: first, second: second });
 
       data.type_order = "account";
       data.stream = {
