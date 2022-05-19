@@ -182,12 +182,11 @@ router.post("/add", async (req, res) => {
 
       for (let i = 0; i < payInfo.length; i++) payTypeData[i].pay_id = payInfo[i].id;
 
-      await prisma.pay_type.createMany({ data: payTypeData, skipDuplicate: false });
+      await prisma.pay_type.createMany({ data: payTypeData, skipDuplicates: false });
     }
 
     res.json({ status: "OK", message: "Success" });
   } catch (e) {
-    console.log(e.message)
     res.json({ status: "error", message: e.message });
   }
 });
