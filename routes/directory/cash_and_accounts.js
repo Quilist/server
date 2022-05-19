@@ -180,7 +180,7 @@ router.post("/add", async (req, res) => {
       await prisma.pay.createMany({ data: payData, skipDuplicates: false });
       const payInfo = await prisma.pay.findMany({ where: { cash_account_id: cashAccount.id } });
 
-      for (let i = 0; i < payInfo.length; i++) payTypeInfo[i].pay_id = payInfo[i].id;
+      for (let i = 0; i < payInfo.length; i++) payTypeData[i].pay_id = payInfo[i].id;
 
       await prisma.pay_type.createMany({ data: payTypeData, skipDuplicate: false });
     }
