@@ -180,7 +180,7 @@ router.get("/transations", async (req, res) => {
       });
     }
   }))
-    .then(res => res.json({ status: "OK", message: { items: res || [] } }))
+    .then(result => res.json({ status: "OK", message: { items: result || [] } }))
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 
