@@ -19,7 +19,7 @@ const types = {
 }
 
 router.get("/", async (req, res) => {
-  const { date_from, date_to, reqPage, reqLimit, orderBy, } = req.query;
+  const { date_from, date_to, reqPage, reqLimit, orderBy } = req.query;
   const search = Number(req.query.search);
 
   const page = Number(reqPage) || 1;
@@ -96,7 +96,7 @@ router.get("/", async (req, res) => {
 router.get("/transations", async (req, res) => {
   const cashAccountList = await prisma.cash_accounts.findMany({ where: { id_user: req.token.id }, include: { pay: true } });
 
-  const result = await Promise.all(cashAccountList.map(async elem => {
+  Promise.all(cashAccountList.map(async elem => {
     const { card, merchant_id, merchant_pass, acc, id, token, last } = elem.stream.privat24;
 
     const pay = [];
@@ -179,10 +179,9 @@ router.get("/transations", async (req, res) => {
         });
       });
     }
-  }));
-
-  console.log(result)
-
+  }))
+    .then(res => res.json({ status: "OK", message: { items: res || [] } }))
+    .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 router.post("/add", async (req, res) => {
