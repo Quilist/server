@@ -140,12 +140,14 @@ router.get("/transations", async (req, res) => {
       }
     }
 
+    const items = [];
+
     if (pay.length) {
       const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
 
       await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
 
-      pay.forEach(async data => {
+      pay.map(async data => {
         const { trandate, trantime, cardamount, description, OSND, CCY, DATE_TIME_DAT_OD_TIM_P, SUM } = data;
 
         const date = String(Date.parse((trandate && trantime) ?
@@ -156,7 +158,7 @@ router.get("/transations", async (req, res) => {
         const payInfo = cardamount?.split(" ");
         const index = currency.findIndex(elem => elem.name === payInfo ? payInfo[1] : CCY);
 
-        return await prisma.pay.create({
+        const entry = await prisma.pay.create({
           data: {
             id_user: req.token.id,
             number: 1,
@@ -177,10 +179,14 @@ router.get("/transations", async (req, res) => {
             }
           }
         });
+
+        items.push(entry);
       });
     }
+
+    return items;
   }))
-    .then(result => res.json({ status: "OK", message: { items: result || [] } }))
+    .then(result => res.json({ status: "OK", message: { items: result[0] } }))
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 
