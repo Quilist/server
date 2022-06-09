@@ -56,10 +56,7 @@ router.get("/", (req, res) => {
         }
       });
     })
-    .catch(e => {
-      console.log(e)
-      res.json({ status: "error", message: e.message })
-    });
+    .catch(e => res.json({ status: "error", message: e.message }));
 });
 
 router.post("/add", async (req, res) => {
