@@ -1,37 +1,60 @@
 const Merchant = require('privatbank-api');
 const fetch = require('node-fetch');
 
-async function individualInfo(card, id, pass, date) {
+async function individualInfo(card, id, pass) {
     const merchant = new Merchant({ id: id, password: pass, country: 'UA' });
 
     const balance = await merchant.balance(card);
-    const extract = await merchant.statement(card, date.first, date.second);
-
     const balanceObj = JSON.parse(balance);
+
+    return { balance: balanceObj?.response?.data?.info?.cardbalance };
+}
+
+async function individualTransations(card, id, pass, date) {
+    const merchant = new Merchant({ id: id, password: pass, country: 'UA' });
+
+    const extract = await merchant.statement(card, date.first, date.second)
     const extractObj = JSON.parse(extract);
 
-    return {
-        balance: balanceObj.response.data.info.cardbalance,
-        extract: extractObj.response.data.info.statements.statement
-    };
+    return { extract: extractObj?.response?.data?.info?.statements?.statement };
 }
 
 async function entityInfo(id, token) {
-    const response = await fetch("https://acp.privatbank.ua/api/statements/balance/final?limit=1000", {
+    const headers = {
         'headers': {
             'id': id,
             'token': token,
-            'Content-type': 'application/json;charset=cp1251'
+            'Content-type': 'application/json;charset=utf8'
         }
-    });
+    }
 
-    const result = await response.json();
-    const array = result.balances.filter(elem => elem.balanceIn !== '0.00')
+    const balanceResponse = await fetch(`https://acp.privatbank.ua/api/statements/balance/final?limit=500`, headers);
+    const resultBalance = await balanceResponse.json();
 
-    return array;
+    const balances = resultBalance.balances.filter(elem => elem.balanceIn !== '0.00');
+
+    return { balances: balances }
+}
+
+
+async function entityTransation(id, token, date) {
+    const headers = {
+        'headers': {
+            'id': id,
+            'token': token,
+            'Content-type': 'application/json;charset=utf8'
+        }
+    }
+
+    const transationsResponse = await fetch(`https://acp.privatbank.ua/api/statements/transactions?startDate=${date}&limit=500`, headers);
+    const resultTransations = await transationsResponse.json();
+
+    return resultTransations?.transactions
 }
 
 module.exports = {
     individualInfo,
-    entityInfo
+    individualTransations,
+    entityInfo,
+    entityTransation
 }

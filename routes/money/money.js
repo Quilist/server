@@ -1,20 +1,29 @@
 const express = require("express");
+const dateAndTime = require('date-and-time');
 
 const prisma = require("../../database/database");
+const privat24 = require("../../services/banks/privat24");
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  const { date_from, date_to, reqPage, reqLimit, orderBy } = req.query;
-  let { search } = req.query;
+const types = {
+  pay_supplier: "suppliers",
+  pay_customer: "clients",
+  pay_expend: "expenditure",
+  pay_salary: "employees",
+  pay_owner: "user",
+
+  receive_income: "income_items",
+  receive_owner: "user",
+  receive_customer: "clients",
+  receive_supplier: "suppliers"
+}
+
+router.get("/", async (req, res) => {
+  const { date_from, date_to, reqPage, reqLimit, orderBy, } = req.query;
+  const search = Number(req.query.search);
 
   const page = Number(reqPage) || 1;
   const limit = Number(reqLimit) || 25;
-
-  if(search) {
-    if(!isNaN(parseInt(search))) {
-      search = parseInt(search);
-    }
-  }
 
   const dateSearch = (date_from || date_to)
     ? {
@@ -25,115 +34,155 @@ router.get("/", (req, res) => {
     }
     : {}
 
-  const searchData = search
-    ? {
-      OR: [
-        { number: search },
-      ],
-    }
-    : {}
+  const searchData = search ? { OR: [{ number: search }] } : {};
 
-  prisma.pay.findMany({
+  const params = {
     where: {
       ...dateSearch,
       ...searchData,
       id_user: req.token.id
     },
-    skip: limit * (page - 1),
-    take: limit,
-    orderBy: {
-      created_at: orderBy || 'desc',
-    },
+    orderBy: { created_at: orderBy || 'desc' },
+  }
+
+  prisma.pay.findMany({
+    ...params,
+    skip: limit * (page - 1), take: limit,
     include: {
-      payments: {
-        include: {
-          currency: true
-        }
-      },
-      cash_account: {
-        include: {
-          cash_accounts_balance: true
-        }
-      },
+      payments: { include: { currency: true } },
+      cash_account: { include: { cash_accounts_balance: true } },
       legal_entity: true,
     },
   })
-    .then(async (result) => {
+    .then(async result => {
+
       const currencyExchangeList = await prisma.currency_exchange.findMany({
-        where: {
-          ...dateSearch,
-          id_user: req.token.id
-        },
-        orderBy: {
-          created_at: orderBy || 'desc',
-        },
-        include: {
-          from_currency: true,
-          to_currency: true,
-          cash_account: true,
-        },
+        ...params,
+        include: { from_currency: true, to_currency: true, cash_account: true }
       });
+
       const moneyMovingList = await prisma.moving_money.findMany({
-        where: {
-          ...dateSearch,
-          id_user: req.token.id
-        },
-        orderBy: {
-          created_at: orderBy || 'desc',
-        },
-        include: {
-          currency: true,
-          from_cash_account: true,
-          to_cash_account: true,
-        },
+        ...params,
+        include: { currency: true, from_cash_account: true, to_cash_account: true }
       });
-      const total = await prisma.pay.count();
-
-      const types = {
-        pay_supplier: "suppliers",
-        pay_customer: "clients",
-        pay_expend: "expenditure",
-
-        receive_income: "income_items",
-        receive_customer: "clients",
-        receive_supplier: "suppliers"
-      }
 
       const resultData = await Promise.all(result.map(async elem => {
         if (elem.type) {
+          const typeItem = await prisma[types[elem.type]].findUnique({ where: { id: +elem.type_id } });
 
-          const typeItem = await prisma[types[elem.type]].findUnique({
-            where: {
-              id: Number(elem.type_id)
-            }
-          });
-
-          if (typeItem) {
-            elem.type_item = typeItem
-          }
-          return elem;
+          if (typeItem) elem.type_item = typeItem
         }
+        return elem;
       }));
 
-      let r = resultData;
-      if(currencyExchangeList?.length > 0) {
-        r = r.concat(currencyExchangeList);
-      }
-      if(moneyMovingList?.length > 0) {
-        r = r.concat(moneyMovingList);
-      }
+      const data = resultData;
+
+      if (currencyExchangeList?.length) data.push(...currencyExchangeList);
+      if (moneyMovingList?.length) data.push(...moneyMovingList);
 
       res.json({
         status: "OK", message: {
-          items: r,
+          items: data,
           paginations: {
-            total: total,
-            last_page: total <= limit ? 1 : total / limit
+            total: data.length,
+            last_page: data.length <= limit ? 1 : Math.round(data.length / limit)
           }
         }
       });
     })
     .catch(e => res.json({ status: "error", message: e.message }));
+});
+
+router.get("/transations", async (req, res) => {
+  const cashAccountList = await prisma.cash_accounts.findMany({ where: { id_user: req.token.id }, include: { pay: true } });
+
+  const result = await Promise.all(cashAccountList.map(async elem => {
+    const { card, merchant_id, merchant_pass, acc, id, token, last } = elem.stream.privat24;
+
+    const pay = [];
+
+    if (card) {
+      let date = last || Infinity;
+      const dateNow = Date.now();
+
+      while (date < dateNow) {
+        const math = dateNow - date < 31536000000 ? dateNow - date : 31536000000;
+
+        const firstDate = dateAndTime.format(new Date(date), "DD.MM.YYYY");
+        const lastDate = dateAndTime.format(new Date(date += math), "DD.MM.YYYY");
+
+        const transactions = await privat24.individualTransations(card, merchant_id, merchant_pass, { first: firstDate, second: lastDate });
+
+        if (transactions.extract) {
+          Array.isArray(transactions.extract) ? pay.push(...transactions.extract) : pay.push(transactions.extract);
+        }
+
+        elem.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
+      }
+    }
+
+    if (acc) {
+      let date = last + 86400000 || Infinity;
+      const dateNow = Date.now();
+
+      while (date < dateNow) {
+        const firstDate = dateAndTime.format(new Date(date), "DD-MM-YYYY");
+        const transactions = await privat24.entityTransation(id, token, firstDate);
+
+        const payDate = pay[pay.length - 1]?.DATE_TIME_DAT_OD_TIM_P;
+        const tranDate = transactions[transactions?.length - 1]?.DATE_TIME_DAT_OD_TIM_P;
+
+        if (payDate === tranDate) break;
+        if (transactions.length) pay.push(...transactions);
+
+        date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")) + 86400000;
+        elem.stream.privat24.last = date;
+      }
+    }
+
+    if (pay.length) {
+      const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
+
+      await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
+
+      pay.forEach(async data => {
+        const { trandate, trantime, cardamount, description, OSND, CCY, DATE_TIME_DAT_OD_TIM_P, SUM } = data;
+
+        const date = String(Date.parse((trandate && trantime) ?
+          dateAndTime.parse(`${trandate} ${trantime}`, "DD-MM-YYYY hh:mm:ss") :
+          dateAndTime.parse(DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")
+        ));
+
+        const payInfo = cardamount?.split(" ");
+        const index = currency.findIndex(elem => elem.name === payInfo ? payInfo[1] : CCY);
+
+        return await prisma.pay.create({
+          data: {
+            id_user: req.token.id,
+            number: 1,
+            cash_account_id: elem.id,
+            type_order: "bank_account",
+            note: description || OSND,
+            created_at: date,
+            updated_at: date,
+            payments: {
+              create: {
+                currency_id: currency[index].id,
+                amount: payInfo ? +payInfo[0] : +SUM,
+                type_pay: "payment",
+                type_amount: "debit",
+                created_at: date,
+                updated_at: date
+              }
+            }
+          }
+        });
+      });
+    }
+  }));
+
+  console.log(result)
+
 });
 
 router.post("/add", async (req, res) => {
@@ -155,9 +204,7 @@ router.post("/add", async (req, res) => {
     updated_at: dateMs
   }
 
-  if (req.body.created_at === "NaN") {
-    data.created_at = dateMs
-  }
+  if (req.body.created_at === "NaN") data.created_at = dateMs;
 
   try {
     const pay = await prisma.pay.create({ data: data });
@@ -278,15 +325,6 @@ router.post("/:id/remove", (req, res) => {
 router.get("/auxiliary/data", async (req, res) => {
 
   const type = req.query.type;
-  const types = {
-    pay_supplier: "suppliers",
-    pay_customer: "clients",
-    pay_expend: "expenditure",
-
-    receive_income: "income_items",
-    receive_customer: "clients",
-    receive_supplier: "suppliers"
-  }
 
   const cashAccount = await prisma.cash_accounts.findMany({
     include: {
@@ -302,7 +340,7 @@ router.get("/auxiliary/data", async (req, res) => {
     }
   });
 
-  const legalEntity = await prisma.legal_entites.findMany({ where: { id_user: req.token.id }, include: { cash_accounts:true } });
+  const legalEntity = await prisma.legal_entites.findMany({ where: { id_user: req.token.id }, include: { cash_accounts: true } });
   const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
   const userSettings = await prisma.user_settings.findUnique({
     where: {

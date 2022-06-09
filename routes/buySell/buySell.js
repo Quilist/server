@@ -253,7 +253,7 @@ router.post("/:id/remove", async (req, res) => {
       })
 
       let debitSum = 0;
-      if(buySell.type == 'sell' ) {
+      if(buySell.type == 'sell') {
         debitSum = parseFloat( client.debit) - parseFloat( buySell.sum);
       }
       if(buySell.type == 'buy') {

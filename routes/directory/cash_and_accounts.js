@@ -1,14 +1,13 @@
 const express = require("express");
+const dateAndTime = require('date-and-time');
 
 const prisma = require("../../database/database");
 const router = express.Router();
 
 const privat24 = require("../../services/banks/privat24");
 
-const map = new Map();
-
 router.get("/", (req, res) => {
-  const { orderBy } = req.query
+  const { orderBy } = req.query;
   const page = Number(req.query.page) || 1;
   const limit = Number(req.query.limit) || 25;
 
@@ -26,26 +25,20 @@ router.get("/", (req, res) => {
     .then(async (result) => {
       const total = await prisma.cash_accounts.count({ where: { id_user: req.token.id } });
 
-      const user = map.get(req.token.id);
-      map.set(req.token.id, user + 1);
-      setTimeout(() => map.delete(req.token.id), 10000);
+      const items = await Promise.all(result.map(async elem => {
+        const { card, acc, merchant_id, merchant_pass, id, token } = elem.stream.privat24
 
-      const items = await Promise.all(result.map(async (elem) => {
+        if (card) {
+          const info = await privat24.individualInfo(card, merchant_id, merchant_pass);
 
-        if (user === 0) {
-          if (elem.privat24?.card) {
-            const info = await privat24.individualInfo(elem.privat24.card, elem.privat24.merchant_id, elem.privat24.merchant_pass);
+          elem.cash_accounts_balance[0].balance = info.balance.balance;
+        }
 
-            elem.cash_accounts_balance[0].balance = info.balance.balance;
-          }
+        if (acc) {
+          const info = await privat24.entityInfo(id, token)
+          const index = info.balances.findIndex(data => data.acc === acc);
 
-          if (elem.privat24?.acc) {
-            const info = await privat24.entityInfo(elem.privat24.id, elem.privat24.token)
-
-            const index = info.findIndex(data => data.acc === elem.privat24.acc);
-
-            if (index !== -1) elem.cash_accounts_balance[0].balance = info[index].balanceIn;
-          }
+          if (index !== -1) elem.cash_accounts_balance[0].balance = info.balances[index].balanceIn;
         }
 
         return elem;
@@ -61,7 +54,10 @@ router.get("/", (req, res) => {
         }
       });
     })
-    .catch(e => res.json({ status: "error", message: e.message }));
+    .catch(e => {
+      console.log(e)
+      res.json({ status: "error", message: e.message })
+    });
 });
 
 router.post("/add", async (req, res) => {
@@ -74,16 +70,14 @@ router.post("/add", async (req, res) => {
     updated_at: dateMs
   }
 
-  const { card_number, acc, balance, id, token, merchant_id, merchant_pass, first, second } = req.body.stream;
+  const { card_number, acc, balance, id, token, merchant_id, merchant_pass, first } = req.body.stream;
 
   try {
-    // приват24 физ лица
     const pay = [];
-
+    // приват24 физ лица
     if (card_number) {
-      const info = await privat24.individualInfo(card_number, merchant_id, merchant_pass, { first: first, second: second });
+      const info = await privat24.individualInfo(card_number, merchant_id, merchant_pass);
 
-      data.type_order = "account";
       data.stream = {
         privat24: {
           card: card_number,
@@ -92,15 +86,47 @@ router.post("/add", async (req, res) => {
         }
       };
 
-      Array.isArray(info.extract) ? pay.push(...info.extract) : pay.push(info.extract);
+      let date = Date.parse(dateAndTime.parse(first, "DD.MM.YYYY")) || Infinity;
+      const dateNow = Date.now();
+
+      while (date < dateNow) {
+        const math = dateNow - date < 31536000000 ? dateNow - date : 31536000000;
+
+        const firstDate = dateAndTime.format(new Date(date), "DD.MM.YYYY");
+        const lastDate = dateAndTime.format(new Date(date += math), "DD.MM.YYYY");
+
+        const transactions = await privat24.individualTransations(card_number, merchant_id, merchant_pass, { first: firstDate, second: lastDate });
+
+        if (transactions.extract) {
+          Array.isArray(transactions.extract) ? pay.push(...transactions.extract) : pay.push(transactions.extract);
+        }
+
+        data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
+      }
 
       req.body.stream.currency = info.balance.card.currency;
       req.body.stream.balance = info.balance.balance
     }
     // приват24 юр лица
     if (acc) {
-      data.type_order = "account";
       data.stream = { privat24: { acc: acc, id: id, token: token } };
+
+      let date = Date.parse(dateAndTime.parse(first, "DD.MM.YYYY")) || Infinity;
+      const dateNow = Date.now();
+
+      while (date < dateNow) {
+        const firstDate = dateAndTime.format(new Date(date), "DD-MM-YYYY");
+        const transactions = await privat24.entityTransation(id, token, firstDate);
+
+        const payDate = pay[pay.length - 1]?.DATE_TIME_DAT_OD_TIM_P;
+        const tranDate = transactions[transactions?.length - 1]?.DATE_TIME_DAT_OD_TIM_P;
+
+        if (payDate === tranDate) break;
+        if (transactions.length) pay.push(...transactions);
+
+        date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")) + 86400000;
+        data.stream.privat24.last = date;
+      }
     }
     // Добавление балансе, а так же проверка на существование валюты
     if (card_number || acc) {
@@ -136,7 +162,6 @@ router.post("/add", async (req, res) => {
     const cashAccount = await prisma.cash_accounts.create({ data: data });
 
     if (balanceList.length) {
-
       const subData = balanceList.map(elem => {
         return {
           ...elem,
@@ -150,39 +175,39 @@ router.post("/add", async (req, res) => {
     if (pay.length) {
       const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
 
-      const payTypeData = [];
+      pay.forEach(async data => {
+        const { trandate, trantime, cardamount, description, OSND, CCY, DATE_TIME_DAT_OD_TIM_P, SUM } = data;
 
-      const payData = pay.map(elem => {
-        const date = String(Date.parse(`${elem.trandate} ${elem.trantime}`));
+        const date = String(Date.parse((trandate && trantime) ?
+          dateAndTime.parse(`${trandate} ${trantime}`, "DD-MM-YYYY hh:mm:ss") :
+          dateAndTime.parse(DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")
+        ));
 
-        const payInfo = elem.cardamount.split(" ");
-        const index = currency.findIndex(elem => elem.name === payInfo[1]);
+        const payInfo = cardamount?.split(" ");
+        const index = currency.findIndex(elem => elem.name === payInfo ? payInfo[1] : CCY);
 
-        payTypeData.push({
-          currency_id: currency[index].id,
-          amount: Number(payInfo[0]),
-          type_pay: "payment",
-          type_amount: "debit",
-          created_at: date,
-          updated_at: date
+        await prisma.pay.create({
+          data: {
+            id_user: req.token.id,
+            number: 1,
+            cash_account_id: cashAccount.id,
+            type_order: "bank_account",
+            note: description || OSND,
+            created_at: date,
+            updated_at: date,
+            payments: {
+              create: {
+                currency_id: currency[index].id,
+                amount: payInfo ? +payInfo[0] : +SUM,
+                type_pay: "payment",
+                type_amount: "debit",
+                created_at: date,
+                updated_at: date
+              }
+            }
+          }
         })
-
-        return {
-          id_user: req.token.id,
-          number: 1,
-          cash_account_id: cashAccount.id,
-          type_order: "bank_account",
-          created_at: date,
-          updated_at: date
-        }
       });
-
-      await prisma.pay.createMany({ data: payData, skipDuplicates: false });
-      const payInfo = await prisma.pay.findMany({ where: { cash_account_id: cashAccount.id } });
-
-      for (let i = 0; i < payInfo.length; i++) payTypeData[i].pay_id = payInfo[i].id;
-
-      await prisma.pay_type.createMany({ data: payTypeData, skipDuplicates: false });
     }
 
     res.json({ status: "OK", message: "Success" });
@@ -204,10 +229,9 @@ router.get("/auxiliary/data", async (req, res) => {
 router.post("/:id/remove", async (req, res) => {
   const id = Number(req.params.id);
 
-  const cashBalance = await prisma.cash_accounts_balance.deleteMany({ where: { cash_account_id: id } });
-  const cashAccounts = await prisma.cash_accounts.delete({ where: { id: id } });
-
-  Promise.all([cashBalance, cashAccounts])
+  // const cashBalance = await prisma.cash_accounts_balance.deleteMany({ where: { cash_account_id: id } });
+  // const pay = await prisma.pay.deleteMany({ where: { cash_account_id: id } });
+  prisma.cash_accounts.delete({ where: { id: id } })
     .then(() => res.json({ status: "OK", message: "Succes" }))
     .catch(e => res.json({ status: "error", message: e.message }));
 });
@@ -228,7 +252,7 @@ router.get("/account", async (req, res) => {
   const { id, token } = req.query;
 
   privat24.entityInfo(id, token.split(" ").join("+"))
-    .then(result => res.json({ status: "OK", message: result }))
+    .then(result => res.json({ status: "OK", message: result.balances }))
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 
