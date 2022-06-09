@@ -26,19 +26,21 @@ router.get("/", (req, res) => {
       const total = await prisma.cash_accounts.count({ where: { id_user: req.token.id } });
 
       const items = await Promise.all(result.map(async elem => {
-        const { card, acc, merchant_id, merchant_pass, id, token } = elem.stream.privat24
+        if (elem.stream.privat24) {
+          const { card, acc, merchant_id, merchant_pass, id, token } = elem.stream.privat24
 
-        if (card) {
-          const info = await privat24.individualInfo(card, merchant_id, merchant_pass);
+          if (card) {
+            const info = await privat24.individualInfo(card, merchant_id, merchant_pass);
 
-          elem.cash_accounts_balance[0].balance = info.balance.balance;
-        }
+            elem.cash_accounts_balance[0].balance = info.balance.balance;
+          }
 
-        if (acc) {
-          const info = await privat24.entityInfo(id, token)
-          const index = info.balances.findIndex(data => data.acc === acc);
+          if (acc) {
+            const info = await privat24.entityInfo(id, token)
+            const index = info.balances.findIndex(data => data.acc === acc);
 
-          if (index !== -1) elem.cash_accounts_balance[0].balance = info.balances[index].balanceIn;
+            if (index !== -1) elem.cash_accounts_balance[0].balance = info.balances[index].balanceIn;
+          }
         }
 
         return elem;
