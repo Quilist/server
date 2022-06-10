@@ -115,16 +115,15 @@ router.post("/add", async (req, res) => {
 
       while (date < dateNow) {
         const firstDate = dateAndTime.format(new Date(date), "DD-MM-YYYY");
-        const transactions = await privat24.entityTransation(id, token, firstDate);
+        const transactions = await privat24.entityTransation(id, token, acc, firstDate);
 
-        const payDate = pay[pay.length - 1]?.DATE_TIME_DAT_OD_TIM_P;
-        const tranDate = transactions[transactions?.length - 1]?.DATE_TIME_DAT_OD_TIM_P;
+        if (transactions.transactions.length) {
+          pay.push(...transactions.transactions);
+          date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")) + 86400000;
+          data.stream.privat24.last = date;
+        }
 
-        if (payDate === tranDate) break;
-        if (transactions.length) pay.push(...transactions);
-
-        date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")) + 86400000;
-        data.stream.privat24.last = date;
+        if (!transactions.exist_next_page) break;
       }
     }
     // Добавление балансе, а так же проверка на существование валюты
@@ -183,7 +182,7 @@ router.post("/add", async (req, res) => {
         ));
 
         const payInfo = cardamount?.split(" ");
-        const index = currency.findIndex(elem => elem.name === payInfo ? payInfo[1] : CCY);
+        const index = currency.findIndex(elem => elem.name === payInfo[1] ? payInfo[1] : CCY);
 
         await prisma.pay.create({
           data: {
@@ -228,9 +227,10 @@ router.get("/auxiliary/data", async (req, res) => {
 router.post("/:id/remove", async (req, res) => {
   const id = Number(req.params.id);
 
-  // const cashBalance = await prisma.cash_accounts_balance.deleteMany({ where: { cash_account_id: id } });
-  // const pay = await prisma.pay.deleteMany({ where: { cash_account_id: id } });
-  prisma.cash_accounts.delete({ where: { id: id } })
+  const pay = await prisma.pay.deleteMany({ where: { cash_account_id: id } });
+  const cash_account = await prisma.cash_accounts.delete({ where: { id: id } });
+
+  Promise.all([pay, cash_account])
     .then(() => res.json({ status: "OK", message: "Succes" }))
     .catch(e => res.json({ status: "error", message: e.message }));
 });

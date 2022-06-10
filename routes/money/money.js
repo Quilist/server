@@ -122,21 +122,20 @@ router.get("/transations", async (req, res) => {
     }
 
     if (acc) {
-      let date = last + 86400000 || Infinity;
+      let date = last || Infinity;
       const dateNow = Date.now();
 
       while (date < dateNow) {
         const firstDate = dateAndTime.format(new Date(date), "DD-MM-YYYY");
-        const transactions = await privat24.entityTransation(id, token, firstDate);
+        const transactions = await privat24.entityTransation(id, token, acc, firstDate);
 
-        const payDate = pay[pay.length - 1]?.DATE_TIME_DAT_OD_TIM_P;
-        const tranDate = transactions[transactions?.length - 1]?.DATE_TIME_DAT_OD_TIM_P;
+        if (transactions.transactions.length) {
+          pay.push(...transactions.transactions);
+          date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")) + 86400000;
+          elem.stream.privat24.last = date;
+        }
 
-        if (payDate === tranDate) break;
-        if (transactions.length) pay.push(...transactions);
-
-        date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")) + 86400000;
-        elem.stream.privat24.last = date;
+        if (!transactions.exist_next_page) break;
       }
     }
 
