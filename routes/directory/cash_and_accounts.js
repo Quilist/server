@@ -196,7 +196,7 @@ router.post("/add", async (req, res) => {
             payments: {
               create: {
                 currency_id: currency[index].id,
-                amount: payInfo ? +payInfo[0] : +SUM,
+                amount: payInfo[1] ? +payInfo[0] : +SUM,
                 type_pay: "payment",
                 type_amount: "debit",
                 created_at: date,
