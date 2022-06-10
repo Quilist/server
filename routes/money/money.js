@@ -150,7 +150,7 @@ router.get("/transations", async (req, res) => {
         const { trandate, trantime, cardamount, description, OSND, CCY, DATE_TIME_DAT_OD_TIM_P, SUM } = data;
 
         const date = String(Date.parse((trandate && trantime) ?
-          dateAndTime.parse(`${trandate} ${trantime}`, "DD-MM-YYYY hh:mm:ss") :
+          dateAndTime.parse(`${trandate} ${trantime}`, "YYYY-MM-DD hh:mm:ss") :
           dateAndTime.parse(DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")
         ));
 
