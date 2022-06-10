@@ -181,7 +181,7 @@ router.post("/add", async (req, res) => {
           dateAndTime.parse(DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")
         ));
 
-        const payInfo = cardamount?.split(" ");
+        const payInfo = cardamount?.split(" ") || [];
         const index = currency.findIndex(elem => elem.name === payInfo[1] ? payInfo[1] : CCY);
 
         await prisma.pay.create({
