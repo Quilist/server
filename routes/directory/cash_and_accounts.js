@@ -175,6 +175,8 @@ router.post("/add", async (req, res) => {
 
       pay.forEach(async data => {
         const { trandate, trantime, cardamount, description, OSND, CCY, DATE_TIME_DAT_OD_TIM_P, SUM } = data;
+        
+        console.log(data)
 
         const date = String(Date.parse((trandate && trantime) ?
           dateAndTime.parse(`${trandate} ${trantime}`, "DD-MM-YYYY hh:mm:ss") :
