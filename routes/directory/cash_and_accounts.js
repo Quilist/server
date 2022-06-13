@@ -98,9 +98,8 @@ router.post("/add", async (req, res) => {
 
         if (transactions.extract) {
           Array.isArray(transactions.extract) ? pay.push(...transactions.extract) : pay.push(transactions.extract);
+          data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
         }
-
-        data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
       }
 
       req.body.stream.currency = info.balance.card.currency;
@@ -119,7 +118,7 @@ router.post("/add", async (req, res) => {
 
         if (transactions.transactions.length) {
           pay.push(...transactions.transactions);
-          date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")) + 86400000;
+          date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss"));
           data.stream.privat24.last = date;
         }
 
@@ -182,7 +181,7 @@ router.post("/add", async (req, res) => {
         ));
 
         const payInfo = cardamount?.split(" ") || [];
-        const index = currency.findIndex(elem => elem.name === payInfo[1] ? payInfo[1] : CCY);
+        const index = currency.findIndex(elem => elem.name === payInfo[1] || CCY);
 
         await prisma.pay.create({
           data: {
