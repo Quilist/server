@@ -184,6 +184,8 @@ router.get("/transations", async (req, res) => {
           }
         });
       }))
+      
+      await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
 
       return await prisma.pay.findMany({
         where: { id_user: req.token.id, id: { gte: result[0].id } },
@@ -192,7 +194,6 @@ router.get("/transations", async (req, res) => {
           cash_account: { include: { cash_accounts_balance: true } },
         },
       });
-      // await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
     }
   }))
     .then(result => res.json({ status: "OK", message: { items: result[0] || [] } }))
