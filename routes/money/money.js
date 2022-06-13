@@ -94,7 +94,7 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/transations", async (req, res) => {
-  const cashAccountList = await prisma.cash_accounts.findMany({ where: { id_user: req.token.id }, include: { pay: true } });
+  const cashAccountList = await prisma.cash_accounts.findMany({ where: { id_user: req.token.id } });
 
   Promise.all(cashAccountList.map(async elem => {
     const { card, merchant_id, merchant_pass, acc, id, token, last } = elem.stream.privat24;
@@ -115,9 +115,8 @@ router.get("/transations", async (req, res) => {
 
         if (transactions.extract) {
           Array.isArray(transactions.extract) ? pay.push(...transactions.extract) : pay.push(transactions.extract);
+          elem.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
         }
-
-        elem.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
       }
     }
 
@@ -125,13 +124,23 @@ router.get("/transations", async (req, res) => {
       let date = last || Infinity;
       const dateNow = Date.now();
 
+      const lastPay = await prisma.pay.findMany({ where: { id_user: req.token.id, created_at: { gte: String(last) } } });
+
       while (date < dateNow) {
         const firstDate = dateAndTime.format(new Date(date), "DD-MM-YYYY");
         const transactions = await privat24.entityTransation(id, token, acc, firstDate);
 
-        if (transactions.transactions.length) {
-          pay.push(...transactions.transactions);
-          date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")) + 86400000;
+        const arr = [];
+
+        transactions.transactions.forEach(data => {
+          const index = lastPay.findIndex(elem => +elem?.created_at === Date.parse(dateAndTime.parse(data.DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")));
+
+          if (index === -1) arr.push(data);
+        })
+
+        if (arr.length) {
+          pay.push(...arr);
+          date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss"));
           elem.stream.privat24.last = date;
         }
 
@@ -139,14 +148,10 @@ router.get("/transations", async (req, res) => {
       }
     }
 
-    const items = [];
-
     if (pay.length) {
       const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
 
-      await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
-
-      pay.map(async data => {
+      const result = await Promise.all(pay.map(async data => {
         const { trandate, trantime, cardamount, description, OSND, CCY, DATE_TIME_DAT_OD_TIM_P, SUM } = data;
 
         const date = String(Date.parse((trandate && trantime) ?
@@ -155,9 +160,9 @@ router.get("/transations", async (req, res) => {
         ));
 
         const payInfo = cardamount?.split(" ") || [];
-        const index = currency.findIndex(elem => elem.name === payInfo ? payInfo[1] : CCY);
+        const index = currency.findIndex(elem => elem.name === payInfo[1] || CCY);
 
-        const entry = await prisma.pay.create({
+        return await prisma.pay.create({
           data: {
             id_user: req.token.id,
             number: 1,
@@ -178,14 +183,19 @@ router.get("/transations", async (req, res) => {
             }
           }
         });
+      }))
 
-        items.push(entry);
+      return await prisma.pay.findMany({
+        where: { id_user: req.token.id, id: { gte: result[0].id } },
+        include: {
+          payments: { include: { currency: true } },
+          cash_account: { include: { cash_accounts_balance: true } },
+        },
       });
+      // await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
     }
-
-    return items;
   }))
-    .then(result => res.json({ status: "OK", message: { items: result[0] } }))
+    .then(result => res.json({ status: "OK", message: { items: result[0] || [] } }))
     .catch(e => res.json({ status: "error", message: e.message }));
 });
 
