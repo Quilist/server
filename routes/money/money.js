@@ -134,13 +134,14 @@ router.get("/transations", async (req, res) => {
 
         transactions.transactions.forEach(data => {
           const index = lastPay.findIndex(elem => +elem?.created_at === Date.parse(dateAndTime.parse(data.DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")));
+          const date = dateAndTime.parse(data.DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")
 
-          if (index === -1 || +lastPay[index].created_at !== last) arr.push(data);
+          if (index === -1 && date > last) arr.push(data);
         })
 
         if (arr.length) {
           pay.push(...arr);
-          date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss"));
+          date = Date.parse(dateAndTime.parse(arr[arr.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss"));
           elem.stream.privat24.last = date;
         }
 
@@ -185,7 +186,10 @@ router.get("/transations", async (req, res) => {
         });
       }))
 
-      // await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } }); 
+      console.log(last)
+      console.log(elem.stream.privat24.last)
+      console.log(pay)
+      await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
 
       return await prisma.pay.findMany({
         where: { id_user: req.token.id, id: { gte: result[0].id } },
