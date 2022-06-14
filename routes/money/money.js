@@ -135,7 +135,7 @@ router.get("/transations", async (req, res) => {
         transactions.transactions.forEach(data => {
           const index = lastPay.findIndex(elem => +elem?.created_at === Date.parse(dateAndTime.parse(data.DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")));
 
-          if (index === -1 && +lastPay[index].created_at !== last) arr.push(data);
+          if (index === -1 || +lastPay[index].created_at !== last) arr.push(data);
         })
 
         if (arr.length) {
@@ -152,7 +152,7 @@ router.get("/transations", async (req, res) => {
       const currency = await prisma.currency.findMany({ where: { id_user: req.token.id } });
 
       const result = await Promise.all(pay.map(async data => {
-        const { trandate, trantime, cardamount, description, OSND, CCY, DATE_TIME_DAT_OD_TIM_P, SUM } = data;
+        const { trandate, trantime, cardamount, description, OSND, CCY, DATE_TIME_DAT_OD_TIM_P, TRANTYPE, SUM } = data;
 
         const date = String(Date.parse((trandate && trantime) ?
           dateAndTime.parse(`${trandate} ${trantime}`, "YYYY-MM-DD hh:mm:ss") :
@@ -184,8 +184,8 @@ router.get("/transations", async (req, res) => {
           }
         });
       }))
-      
-      await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
+
+      // await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } }); 
 
       return await prisma.pay.findMany({
         where: { id_user: req.token.id, id: { gte: result[0].id } },
