@@ -135,7 +135,7 @@ router.get("/transations", async (req, res) => {
         transactions.transactions.forEach(data => {
           const index = lastPay.findIndex(elem => +elem?.created_at === Date.parse(dateAndTime.parse(data.DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")));
 
-          if (index === -1 || +lastPay[index].created_at !== last) arr.push(data);
+          if (index === -1 && +lastPay[index].created_at !== last) arr.push(data);
         })
 
         if (arr.length) {
