@@ -1,5 +1,6 @@
 const Merchant = require('privatbank-api');
 const fetch = require('node-fetch');
+const dateAndTime = require('date-and-time');
 
 async function individualInfo(card, id, pass) {
     const merchant = new Merchant({ id: id, password: pass, country: 'UA' });
@@ -28,7 +29,9 @@ async function entityInfo(id, token) {
         }
     }
 
-    const balanceResponse = await fetch(`https://acp.privatbank.ua/api/statements/balance/final?limit=500`, headers);
+    const date = dateAndTime.format(new Date(), "DD-MM-YYYY")
+
+    const balanceResponse = await fetch(`https://acp.privatbank.ua/api/statements/balance?startDate=${date}&limit=500`, headers);
     const resultBalance = await balanceResponse.json();
 
     const balances = resultBalance.balances.filter(elem => elem.balanceIn !== '0.00');
