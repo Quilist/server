@@ -117,7 +117,7 @@ router.get("/transations", async (req, res) => {
 
         if (transactions.extract) {
           const extract = Array.isArray(transactions.extract) ? [...transactions.extract] : [transactions.extract];
-          const arr = arr.filter(elem => elem.card === card);
+          const arr = [];
 
           extract.forEach(data => {
             const date = Date.parse(dateAndTime.parse(`${elem.trandate} ${elem.trantime}`, "YYYY-MM-DD hh:mm:ss"));
