@@ -120,7 +120,7 @@ router.get("/transations", async (req, res) => {
           const arr = [];
 
           extract.forEach(data => {
-            const date = Date.parse(dateAndTime.parse(`${elem.trandate} ${elem.trantime}`, "YYYY-MM-DD hh:mm:ss"));
+            const date = Date.parse(dateAndTime.parse(`${data.trandate} ${data.trantime}`, "YYYY-MM-DD hh:mm:ss"));
             const index = lastPay.findIndex(elem => +elem?.created_at === date);
 
             if (index === -1 && date > last) arr.push(data);
