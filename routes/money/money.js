@@ -99,6 +99,9 @@ router.get("/transations", async (req, res) => {
   Promise.all(cashAccountList.map(async elem => {
     const { card, merchant_id, merchant_pass, acc, id, token, last } = elem.stream.privat24;
 
+    // elem.stream.privat24.last = 1655189700000
+    // await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
+
     const pay = [];
 
     if (card) {
@@ -116,6 +119,8 @@ router.get("/transations", async (req, res) => {
         if (transactions.extract) {
           Array.isArray(transactions.extract) ? pay.push(...transactions.extract) : pay.push(transactions.extract);
           elem.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
+        } else {
+          elem.stream.privat24.last = date;
         }
       }
     }
@@ -142,8 +147,9 @@ router.get("/transations", async (req, res) => {
         if (arr.length) {
           pay.push(...arr);
           date = Date.parse(dateAndTime.parse(arr[arr.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss"));
-          elem.stream.privat24.last = date;
         }
+
+        elem.stream.privat24.last = date;
 
         if (!transactions.exist_next_page) break;
       }
@@ -186,9 +192,6 @@ router.get("/transations", async (req, res) => {
         });
       }))
 
-      console.log(last)
-      console.log(elem.stream.privat24.last)
-      console.log(pay)
       await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
 
       return await prisma.pay.findMany({
