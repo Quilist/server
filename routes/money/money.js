@@ -99,14 +99,13 @@ router.get("/transations", async (req, res) => {
   Promise.all(cashAccountList.map(async elem => {
     const { card, merchant_id, merchant_pass, acc, id, token, last } = elem.stream.privat24;
 
-    // elem.stream.privat24.last = 1655189700000
-    // await prisma.cash_accounts.update({ data: { stream: elem.stream, updated_at: String(Date.now()) }, where: { id: elem.id } });
-
     const pay = [];
 
     if (card) {
       let date = last || Infinity;
       const dateNow = Date.now();
+
+      const lastPay = await prisma.pay.findMany({ where: { id_user: req.token.id, created_at: { gte: String(last) } } });
 
       while (date < dateNow) {
         const math = dateNow - date < 31536000000 ? dateNow - date : 31536000000;
@@ -117,8 +116,16 @@ router.get("/transations", async (req, res) => {
         const transactions = await privat24.individualTransations(card, merchant_id, merchant_pass, { first: firstDate, second: lastDate });
 
         if (transactions.extract) {
-          const arr = Array.isArray(transactions.extract) ? [...transactions.extract] : [transactions.extract];
-          const filter = arr.filter(elem => elem.card === card);
+          const extract = Array.isArray(transactions.extract) ? [...transactions.extract] : [transactions.extract];
+          const arr = arr.filter(elem => elem.card === card);
+
+          extract.forEach(data => {
+            const date = Date.parse(dateAndTime.parse(`${elem.trandate} ${elem.trantime}`, "YYYY-MM-DD hh:mm:ss"));
+            const index = lastPay.findIndex(elem => +elem?.created_at === date);
+
+            if (index === -1 && date > last) arr.push(data);
+          })
+
 
           pay.push(...filter);
           elem.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "YYYY-MM-DD hh:mm:ss"));
@@ -141,8 +148,8 @@ router.get("/transations", async (req, res) => {
         const arr = [];
 
         transactions.transactions.forEach(data => {
-          const index = lastPay.findIndex(elem => +elem?.created_at === Date.parse(dateAndTime.parse(data.DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")));
-          const date = dateAndTime.parse(data.DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss")
+          const date = Date.parse(dateAndTime.parse(data.DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss"));
+          const index = lastPay.findIndex(elem => +elem?.created_at === date);
 
           if (index === -1 && date > last) arr.push(data);
         })
