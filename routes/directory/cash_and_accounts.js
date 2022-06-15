@@ -100,8 +100,10 @@ router.post("/add", async (req, res) => {
           const arr = Array.isArray(transactions.extract) ? [...transactions.extract] : [transactions.extract];
           const filter = arr.filter(elem => elem.card === card_number);
 
-          pay.push(...filter);
-          data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
+          if (filter.length) {
+            pay.push(...filter);
+            data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
+          }
         } else {
           data.stream.privat24.last = date;
         }
