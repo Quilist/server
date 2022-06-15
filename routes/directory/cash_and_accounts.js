@@ -99,6 +99,8 @@ router.post("/add", async (req, res) => {
         if (transactions.extract) {
           Array.isArray(transactions.extract) ? pay.push(...transactions.extract) : pay.push(transactions.extract);
           data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
+        } else {
+          elem.stream.privat24.last = date;
         }
       }
 
@@ -119,8 +121,9 @@ router.post("/add", async (req, res) => {
         if (transactions.transactions.length) {
           pay.push(...transactions.transactions);
           date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss"));
-          data.stream.privat24.last = date;
         }
+
+        elem.stream.privat24.last = date;
 
         if (!transactions.exist_next_page) break;
       }
