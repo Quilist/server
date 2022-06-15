@@ -102,7 +102,7 @@ router.post("/add", async (req, res) => {
 
           if (filter.length) {
             pay.push(...filter);
-            data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
+            data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "YYYY-MM-DD hh:mm:ss"));
           }
         } else {
           data.stream.privat24.last = date;
