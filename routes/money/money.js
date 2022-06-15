@@ -122,7 +122,7 @@ router.get("/transations", async (req, res) => {
 
           if (filter.length) {
             pay.push(...filter);
-            data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
+            elem.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
           }
         } else {
           elem.stream.privat24.last = date;
