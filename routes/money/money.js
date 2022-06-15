@@ -117,7 +117,10 @@ router.get("/transations", async (req, res) => {
         const transactions = await privat24.individualTransations(card, merchant_id, merchant_pass, { first: firstDate, second: lastDate });
 
         if (transactions.extract) {
-          Array.isArray(transactions.extract) ? pay.push(...transactions.extract) : pay.push(transactions.extract);
+          const arr = Array.isArray(transactions.extract) ? [...transactions.extract] : [transactions.extract];
+          const filter = arr.filter(elem => elem.card === card);
+
+          pay.push(...filter);
           elem.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
         } else {
           elem.stream.privat24.last = date;

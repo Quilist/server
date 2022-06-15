@@ -97,10 +97,13 @@ router.post("/add", async (req, res) => {
         const transactions = await privat24.individualTransations(card_number, merchant_id, merchant_pass, { first: firstDate, second: lastDate });
 
         if (transactions.extract) {
-          Array.isArray(transactions.extract) ? pay.push(...transactions.extract) : pay.push(transactions.extract);
+          const arr = Array.isArray(transactions.extract) ? [...transactions.extract] : [transactions.extract];
+          const filter = arr.filter(elem => elem.card === card_number);
+
+          pay.push(...filter);
           data.stream.privat24.last = Date.parse(dateAndTime.parse(`${pay[pay.length - 1].trandate} ${pay[pay.length - 1].trantime}`, "DD-MM-YYYY hh:mm:ss"));
         } else {
-          elem.stream.privat24.last = date;
+          data.stream.privat24.last = date;
         }
       }
 
@@ -123,7 +126,7 @@ router.post("/add", async (req, res) => {
           date = Date.parse(dateAndTime.parse(pay[pay.length - 1].DATE_TIME_DAT_OD_TIM_P, "DD.MM.YYYY hh:mm:ss"));
         }
 
-        elem.stream.privat24.last = date;
+        data.stream.privat24.last = date;
 
         if (!transactions.exist_next_page) break;
       }
